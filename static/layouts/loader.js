@@ -4,7 +4,7 @@ window.addEventListener("load", function(){
     var load_screen = document.getElementById("load_screen");
     document.body.removeChild(load_screen);
 
-    var layoutName = 'Modern Light Menu';
+    var layoutName = 'Horizontal Light Menu';
 
     var settingsObject = {
         admin: 'Cork Admin Template',
@@ -112,7 +112,7 @@ window.addEventListener("load", function(){
             if (document.body.getAttribute('layout') !== 'full-width') {
                 document.body.classList.add('layout-boxed');
                 if (document.querySelector('.header-container')) {
-                    document.querySelector('.header-container').classList.add('container-xxl');
+                    // document.querySelector('.header-container').classList.add('container-xxl');
                 }
                 if (document.querySelector('.middle-content')) {
                     document.querySelector('.middle-content').classList.add('container-xxl');
@@ -148,7 +148,7 @@ window.addEventListener("load", function(){
             } else {
                 document.body.classList.add('layout-boxed');
                 if (document.querySelector('.header-container')) {
-                    document.querySelector('.header-container').classList.add('container-xxl');
+                    // document.querySelector('.header-container').classList.add('container-xxl');
                 }
                 if (document.querySelector('.middle-content')) {
                     document.querySelector('.middle-content').classList.add('container-xxl');

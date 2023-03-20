@@ -1,0 +1,251 @@
+{% extends "header.html" %}
+
+{% block body %}
+
+<script src="{{ url_for('static', filename='src/plugins/src/waves/waves.min.js') }}"></script>
+<link href="{{ url_for('static', filename='src/assets/css/light/components/list-group.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ url_for('static', filename='src/assets/css/light/users/user-profile.css') }}" rel="stylesheet" type="text/css" />
+
+<link href="{{ url_for('static', filename='src/assets/css/dark/components/list-group.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ url_for('static', filename='src/assets/css/dark/users/user-profile.css') }}" rel="stylesheet" type="text/css" />
+
+<div class="row layout-spacing ">
+    <div class="col-xl-5 col-lg-12 col-md-12 col-sm-12 layout-top-spacing">
+            <div class="widget-content widget-content-area">
+                <div class="d-flex justify-content-between">
+                    <h3 class="">General Information</h3>
+                    <!-- <a href="./user-account-settings.html" class="mt-2 edit-profile"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></a> -->
+                </div>
+                {% for ptID, diagnosisDate, amlType, mll, flt3Itd, flt3Kinase, bcrAbl, notes in pt_data %}
+                <div class="text-center user-info">
+                    <h5 class="">CIRM# {{ptID}}</h5>
+                </div>
+                <div class="user-info-list">
+
+                    <div class="">
+                        <ul class="contacts-block list-unstyled">
+                            <li class="contacts-block__item">
+                                Date of AML Diagnosis: {{diagnosisDate}}
+                            </li>
+                            <li class="contacts-block__item">
+                                AML Subtype: {{amlType}}
+                            </li>
+                            <li class="contacts-block__item">
+                                MLL Rearr. Mutation: {{booldict[mll]}}
+                            </li>
+                            <li class="contacts-block__item">
+                                FLT3 ITD Mutation: {{booldict[flt3Itd]}}
+                            </li>
+                            <li class="contacts-block__item">
+                                FLT3 Kinase Mutation: {{booldict[flt3Kinase]}}
+                            </li>
+                            <li class="contacts-block__item">
+                                BCR-ABL Fusion Mutation: {{booldict[bcrAbl]}}
+                            </li>
+                            <li class="contacts-block__item">
+                                Notes: {{notes}}
+                            </li>
+                        </ul>
+                    </div>                                    
+                </div>
+                {% endfor %}
+            </div>
+    </div>
+
+    <div class="col-xl-7 col-lg-12 col-md-12 col-sm-12 layout-top-spacing">
+
+        <div class="usr-tasks ">
+            <div class="widget-content widget-content-area">
+                <h3 class="">NSG Mutations</h3> 
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Mutation ID</th>
+                                <th>Gene</th>
+                                <th>Mutation</th>
+                                <th>Variant Freq.</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mutID, ptID , gene, mutation, vaf, mutnotes in mut_data %}
+                            <tr>
+                                <td>{{mutID}}</td>
+                                <td>{{gene}}</td>
+                                <td>{{mutation}}</td>
+                                <td>{{vaf}}</td>
+                                <td>{{mutnotes}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button class="btn btn-secondary" onclick="location.href='/add-mutation/?ptid={{ptID}}'" >Add Mutation</button>
+            </div>
+        </div>
+        
+    </div>
+    
+</div>
+
+<div class="row">
+
+    <div class="col-xl-6 col-lg-12 col-md-12 col-sm-12">
+        <div class="summary layout-spacing ">
+            <div class="widget-content widget-content-area">
+                <h3 class="">Treatment History</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Entry ID</th>
+                                <th>Drug</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for treatID, ptID, drug, startdate, enddate, notes in treat_hist %}
+                            <tr>
+                                <td>{{treatID}}</td>
+                                <td>{{drug}}</td>
+                                <td>{{startdate}}</td>
+                                <td>{{enddate}}</td>
+                                <td>{{notes}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button class="btn btn-secondary">Add Treatment</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 col-lg-12 col-md-12 col-sm-12">
+
+        <div class="summary layout-spacing ">
+            <div class="widget-content widget-content-area">
+                <h3 class="">Vial Usage History</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Entry ID</th>
+                                <th># Vials Taken</th>
+                                <th>PB/BM</th>
+                                <th>PB/BM ID</th>
+                                <th>User</th>
+                                <th>Experiment</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entryID, ptID, vialsTaken, sampleType, sampleID, user, exp, date in vial_usage_log %}
+                            <tr>
+                                <td>{{entryID}}</td>
+                                <td>{{vialsTaken}}</td>
+                                <td>{{sampleType}}</td>
+                                <td>{{sampleID}}</td>
+                                <td>{{user}}</td>
+                                <td>{{exp}}</td>
+                                <td>{{date}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button class="btn btn-secondary">Take Vial</button>
+            </div>
+
+        </div>
+        
+    </div>
+
+    <div class="row layout-top-spacing">        
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <div class="widget-content widget-content-area br-8">
+                <h3 class="">BM Collections Log</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>BM ID</th>
+                                <th>DOC</th>
+                                <th>DOP</th>
+                                <th># Vials</th>
+                                <th>Cell #/Vial</th>
+                                <th>Type</th>
+                                <th>Freezedown Media</th>
+                                <th>Location</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bmID, ptID, doc, dop, vials, cellNumbers, type, freezedownMedia, location, clinicalFlow, notes in bm_sample_log %}
+                            <tr>
+                                <td>{{bmID}}</td>
+                                <td>{{doc}}</td>
+                                <td>{{dop}}</td>
+                                <td>{{vials}}</td>
+                                <td>{{cellNumbers}}</td>
+                                <td>{{type}}</td>
+                                <td>{{freezedownMedia}}</td>
+                                <td>{{location}}</td>
+                                <td>{{notes}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button class="btn btn-secondary">Add BM Collection</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row layout-top-spacing">        
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <div class="widget-content widget-content-area br-8">
+                <h3 class="">PB/LP Collections Log</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>PB ID</th>
+                                <th>DOC</th>
+                                <th>DOP</th>
+                                <th># Vials</th>
+                                <th>Cell #/Vial</th>
+                                <th>LP Sample</th>
+                                <th>Type</th>
+                                <th>Freezedown Media</th>
+                                <th>Location</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pbID, ptID, doc, dop, vials, cellNumbers, lp, type, freezedownMedia, location, cbcID, notes in pb_sample_log %}
+                            <tr>
+                                <td>{{pbID}}</td>
+                                <td>{{doc}}</td>
+                                <td>{{dop}}</td>
+                                <td>{{vials}}</td>
+                                <td>{{cellNumbers}}</td>
+                                <td>{{booldict[lp]}}</td>
+                                <td>{{type}}</td>
+                                <td>{{freezedownMedia}}</td>
+                                <td>{{location}}</td>
+                                <td>{{notes}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button class="btn btn-secondary">Add PB/LP Collection</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

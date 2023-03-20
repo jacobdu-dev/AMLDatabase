@@ -1,0 +1,35 @@
+{% extends "header.html" %}
+
+{% block body %}
+
+<div class="card">
+	<div class="card-body">
+		<h3>Add NSG Panel Mutation to CIRM {{ptID}}</h3>
+
+		<form method="post">
+			<div class="form-group">
+				<label for="inputPatientID">CIRM Number/Patient ID</label>
+				<input type="number" id="inputPatientID" class="form-control" name="ptid" value="{{ptID}}" readonly>
+			</div>
+			<div class="form-group">
+				<label for="inputGene">Gene</label>
+				<input type="text" id="inputGene" class="form-control" maxlength="255" name="gene" value="{{request.form.gene}}" required>
+			</div>
+			<div class="form-group">
+				<label for="inputMutation">Mutation</label>
+				<input type="text" id="inputMutation" class="form-control" maxlength="255" name="mutation" value="{{request.form.mutation}}" required>
+			</div>
+			<div class="form-group">
+				<label for="inputVaf">VAF (%)</label>
+				<input type="number" step="0.01"  id="inputVaf" class="form-control" maxlength="255" name="vaf" value="{{request.form.vaf}}" required>
+			</div>
+			<div class="form-group">
+				<label for="inputNotes">Notes</label>
+				<input type="text" id="inputNotes" class="form-control" maxlength="255" name="notes" value="{{request.form.notes}}" required>
+			</div>
+			<button class="btn btn-primary" type="submit" value="submit">Add to CIRM {{ptID}} Mutation Log</button>
+		</form>
+	</div>
+</div>
+
+{% endblock %}

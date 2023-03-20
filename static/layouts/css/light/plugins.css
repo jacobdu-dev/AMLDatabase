@@ -1,6 +1,6 @@
-@import url('../../../../src/assets/css/light/main.css');
-@import url('../../../../src/plugins/css/light/perfect-scrollbar/perfect-scrollbar.css');
-@import url('../../../../src/plugins/src/waves/waves.min.css');
+@import url('/static/src/assets/css/light/main.css');
+@import url('/static/src/plugins/css/light/perfect-scrollbar/perfect-scrollbar.css');
+@import url('/static/src/plugins/src/waves/waves.min.css');
 @import url('./structure.css');
 /*
     Importing highlight.js CSS code 
@@ -10,4 +10,4 @@
 	@Note:-  monokai-sublime.css stylesheet is for highliting the code;
 
 */
-@import '../../../../src/plugins/src/highlight/styles/monokai-sublime.css';
+@import '/static/src/plugins/src/highlight/styles/monokai-sublime.css';

@@ -1,0 +1,43 @@
+{% extends "header.html" %}
+
+{% block body %}
+
+<h3>View/Search AML Patient Log</h3>
+
+{% if sqlquery != None %}
+<div class="alert alert-light-dark alert-dismissible fade show border-0 mb-4" role="alert"> <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x close" data-bs-dismiss="alert"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button> 
+	<strong>SQL Query:</strong> 
+	{{sqlquery}} 
+</div>
+{% endif %}
+
+<table class="table">
+	<thead>
+		<tr>
+			<th scope="col">CIRM #</th>
+			<th scope="col">Diagnosis Date</th>
+			<th scope="col">AML Subtype</th>
+			<th scope="col">MLL Rearrangement</th>
+			<th scope="col">FLT3 ITD</th>
+			<th scope="col">FLT3 Kinase Mut.</th>
+			<th scope="col">BCR-ABL Fusion</th>
+			<th scope="col">Notes</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for ptid, diagnosisdate, amltype, mll, flt3itd, flt3k, bcrabl, notes in patients %}
+		<tr>
+			<th scope="row"><a href="/patient/?ptid={{ptid}}">{{ptid}}</a></th>
+			<td>{{diagnosisdate}}</td>
+			<td>{{amltype}}</td>
+			<td>{{booldict[mll]}}</td>
+			<td>{{booldict[flt3itd]}}</td>
+			<td>{{booldict[flt3k]}}</td>
+			<td>{{booldict[bcrabl]}}</td>
+			<td>{{notes}}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}

@@ -51,7 +51,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </a>
 
-            <ul class="navbar-item flex-row ms-lg-auto ms-0">
+            <!-- <ul class="navbar-item flex-row ms-lg-auto ms-0">
 
                 <li class="nav-item dropdown user-profile-dropdown  order-lg-0 order-1">
                     <a href="javascript:void(0);" class="nav-link dropdown-toggle user" id="userProfileDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -95,7 +95,7 @@
                     </div>
                     
                 </li>
-            </ul>
+            </ul> -->
         </header>
     </div>
     <!--  END NAVBAR  -->
@@ -119,7 +119,7 @@
                             </a>
                         </div>
                         <div class="nav-item theme-text">
-                            <a href="index.html" class="nav-link"> CORK </a>
+                            <a href="/" class="nav-link">  </a>
                         </div>
                     </div>
                     <div class="nav-item sidebar-toggle">
@@ -132,37 +132,19 @@
                 <ul class="list-unstyled menu-categories" id="accordionExample">
 
                     <li class="menu active">
-                        <a href="empty-page.html" aria-expanded="true" class="dropdown-toggle">
+                        <a href="/" aria-expanded="false" class="dropdown-toggle">
                             <div class="">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-columns"><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path></svg>
-                                <span>Empty Page</span>
+                                <span>Search</span>
                             </div>
                         </a>
                     </li>
                     
                     <li class="menu">
-                        <a href="full-width.html" aria-expanded="false" class="dropdown-toggle">
+                        <a href="/view-patients/" aria-expanded="false" class="dropdown-toggle">
                             <div class="">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-monitor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-                                <span>Full Width</span>
-                            </div>
-                        </a>
-                    </li>
-                    
-                    <li class="menu">
-                        <a href="collapsible-menu.html" aria-expanded="false" class="dropdown-toggle">
-                            <div class="">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-layout"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                                <span>Collapsed Menu</span>
-                            </div>
-                        </a>
-                    </li>
-
-                    <li class="menu">
-                        <a href="blank-page.html" aria-expanded="false" class="dropdown-toggle">
-                            <div class="">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                <span>Blank Page</span>
+                                <span>View</span>
                             </div>
                         </a>
                     </li>
@@ -175,7 +157,7 @@
                         <a href="#home" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
                             <div class="">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-hash"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
-                                <span>Level 1</span>
+                                <span>Modify Records</span>
                             </div>
                             <div>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -183,23 +165,37 @@
                         </a>
                         <ul class="collapse submenu list-unstyled" id="home" data-bs-parent="#accordionExample">
                             <li>
-                                <a href="javascript:void(0);"> Level 2a </a>
+                                <a href="/add-patient/">Add Patient</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);"> Level 2b </a>
+                                <a href="javascript:void(0);">Add Sample</a>
                             </li>
-
                             <li>
-                                <a href="#level-three" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle collapsed"> Level 2c <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg> </a>
+                                <a href="javascript:void(0);">Add Mutation</a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);">Add Treatment</a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);">Add Clinical CBC</a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);">Add Clinical Flow</a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);">Use Sample</a>
+                            </li>
+                            <li>
+                                <a href="#level-three" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle collapsed"> Remove <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg> </a>
                                 <ul class="collapse list-unstyled sub-submenu" id="level-three" data-bs-parent="#pages"> 
                                     <li>
-                                        <a href="javascript:void(0);"> Level 3a </a>
+                                        <a href="javascript:void(0);">Patient</a>
                                     </li>
                                     <li>
-                                        <a href="javascript:void(0);"> Level 3b </a>
+                                        <a href="javascript:void(0);">Sample</a>
                                     </li>
                                     <li>
-                                        <a href="javascript:void(0);"> Level 3c </a>
+                                        <a href="javascript:void(0);">Mutation</a>
                                     </li>
                                 </ul>
                             </li>
@@ -220,8 +216,20 @@
                 <div class="middle-content container-xxl p-0"> 
                     <!-- CONTENT AREA -->
                     <div class="row layout-top-spacing">
-                        
+                        {% if message != None %}
+                        <div class="alert alert-light-info alert-dismissible fade show border-0 mb-4" role="alert"> <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x close" data-bs-dismiss="alert"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button> 
+                            <strong>Message:</strong> 
+                            {{message}}
+                        </div>
+                        {% endif %}
+                        {% if error != None %}
+                        <div class="alert alert-light-danger alert-dismissible fade show border-0 mb-4" role="alert"> <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x close" data-bs-dismiss="alert"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button> 
+                            <strong>Error!</strong> 
+                            {{error}}
+                        </div>
+                        {% endif %}
                         <div class="col-md-12">
+                            {% block body %}{% endblock %}
                         </div>
 
                     </div>

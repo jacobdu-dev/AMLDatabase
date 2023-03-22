@@ -131,10 +131,10 @@
 
                 <ul class="list-unstyled menu-categories" id="accordionExample">
 
-                    <li class="menu active">
+                    <li class="menu">
                         <a href="/" aria-expanded="false" class="dropdown-toggle">
                             <div class="">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-columns"><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                                 <span>Search</span>
                             </div>
                         </a>
@@ -166,24 +166,6 @@
                         <ul class="collapse submenu list-unstyled" id="home" data-bs-parent="#accordionExample">
                             <li>
                                 <a href="/add-patient/">Add Patient</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);">Add Sample</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);">Add Mutation</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);">Add Treatment</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);">Add Clinical CBC</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);">Add Clinical Flow</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);">Use Sample</a>
                             </li>
                             <li>
                                 <a href="#level-three" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle collapsed"> Remove <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg> </a>
@@ -255,6 +237,14 @@
     <!-- END GLOBAL MANDATORY SCRIPTS -->
 
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
+    <!-- for Data Tables -->
+    <script src="{{ url_for('static', filename='src/plugins/src/table/datatable/datatables.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/plugins/src/table/datatable/button-ext/dataTables.buttons.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/plugins/src/table/datatable/button-ext/jszip.min.js') }}"></script>    
+    <script src="{{ url_for('static', filename='src/plugins/src/table/datatable/button-ext/buttons.html5.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/plugins/src/table/datatable/button-ext/buttons.print.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/plugins/src/table/datatable/custom_miscellaneous.js') }}"></script>
+    <!-- for Data Tables -->
 
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
 </body>

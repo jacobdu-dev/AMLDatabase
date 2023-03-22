@@ -2,6 +2,12 @@
 
 {% block body %}
 
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/plugins/src/table/datatable/datatables.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/plugins/css/light/table/datatable/dt-global_style.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/plugins/css/light/table/datatable/custom_dt_miscellaneous.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/plugins/css/dark/table/datatable/dt-global_style.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/plugins/css/dark/table/datatable/custom_dt_miscellaneous.css') }}">
+
 <h3>View/Search AML Patient Log</h3>
 
 {% if sqlquery != None %}
@@ -11,33 +17,61 @@
 </div>
 {% endif %}
 
-<table class="table">
-	<thead>
-		<tr>
-			<th scope="col">CIRM #</th>
-			<th scope="col">Diagnosis Date</th>
-			<th scope="col">AML Subtype</th>
-			<th scope="col">MLL Rearrangement</th>
-			<th scope="col">FLT3 ITD</th>
-			<th scope="col">FLT3 Kinase Mut.</th>
-			<th scope="col">BCR-ABL Fusion</th>
-			<th scope="col">Notes</th>
-		</tr>
-	</thead>
-	<tbody>
-		{% for ptid, diagnosisdate, amltype, mll, flt3itd, flt3k, bcrabl, notes in patients %}
-		<tr>
-			<th scope="row"><a href="/patient/?ptid={{ptid}}">{{ptid}}</a></th>
-			<td>{{diagnosisdate}}</td>
-			<td>{{amltype}}</td>
-			<td>{{booldict[mll]}}</td>
-			<td>{{booldict[flt3itd]}}</td>
-			<td>{{booldict[flt3k]}}</td>
-			<td>{{booldict[bcrabl]}}</td>
-			<td>{{notes}}</td>
-		</tr>
-		{% endfor %}
-	</tbody>
-</table>
+
+<div class="row layout-spacing">
+    <div class="col-lg-12">
+        <div class="statbox widget box box-shadow">
+            <div class="widget-content widget-content-area">
+                <table id="show-hide-col" class="table dt-table-hover" style="width:100%">
+                    <thead style="border-bottom: none;">
+                        <tr>
+                            <th>CIRM #</th>
+                            <th>Diagnosis Date</th>
+                            <th>AML Subtype</th>
+                            <th>MLL Rearrangement</th>
+                            <th>FLT3 ITD</th>
+                            <th>FLT3 Kinase Mut.</th>
+                            <th>BCR-ABL Fusion</th>
+                            <th>Notes</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    	{% for ptid, diagnosisdate, amltype, mll, flt3itd, flt3k, bcrabl, notes in patients %}
+                        <tr>
+                        	<td><a href="/patient/?ptid={{ptid}}">{{ptid}}</a></td>
+							<td>{{diagnosisdate}}</td>
+							<td>{{amltype}}</td>
+							<td>{{booldict[mll]}}</td>
+							<td>{{booldict[flt3itd]}}</td>
+							<td>{{booldict[flt3k]}}</td>
+							<td>{{booldict[bcrabl]}}</td>
+							<td>{{notes}}</td>
+                            <td>
+                                <a href="/patient/?ptid={{ptid}}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>CIRM #</th>
+                            <th>Diagnosis Date</th>
+                            <th>AML Subtype</th>
+                            <th>MLL Rearrangement</th>
+                            <th>FLT3 ITD</th>
+                            <th>FLT3 Kinase Mut.</th>
+                            <th>BCR-ABL Fusion</th>
+                            <th>Notes</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 {% endblock %}

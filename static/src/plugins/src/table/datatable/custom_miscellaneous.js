@@ -60,7 +60,7 @@ $(document).ready(function() {
         },
         buttons: [
             {
-                text: 'Name',
+                text: 'CIRM/Pt#',
                 className: 'btn btn-primary toggle-vis mb-1',
                 action: function(e, dt, node, config ) {
                     var column = dt.column( 0 );
@@ -68,7 +68,7 @@ $(document).ready(function() {
                 }
             },
             {
-                text: 'Position',
+                text: 'Diagosis Date',
                 className: 'btn btn-primary toggle-vis mb-1',
                 action: function(e, dt, node, config ) {
                     var column = dt.column( 1 );
@@ -76,7 +76,7 @@ $(document).ready(function() {
                 }
             },
             {
-                text: 'Office',
+                text: 'AML Subtype',
                 className: 'btn btn-primary toggle-vis mb-1',
                 action: function(e, dt, node, config ) {
                     var column = dt.column( 2 );
@@ -84,7 +84,7 @@ $(document).ready(function() {
                 }
             },
             {
-                text: 'Age',
+                text: 'MLL Rearrangement Mut.',
                 className: 'btn btn-primary toggle-vis mb-1',
                 action: function(e, dt, node, config ) {
                     var column = dt.column( 3 );
@@ -92,7 +92,7 @@ $(document).ready(function() {
                 }
             },
             {
-                text: 'Start date',
+                text: 'FLT3 ITD Mut.',
                 className: 'btn btn-primary toggle-vis mb-1',
                 action: function(e, dt, node, config ) {
                     var column = dt.column( 4 );
@@ -100,17 +100,33 @@ $(document).ready(function() {
                 }
             },
             {
-                text: 'Salary',
+                text: 'FLT3 Kinase Mut.',
                 className: 'btn btn-primary toggle-vis mb-1',
                 action: function(e, dt, node, config ) {
                     var column = dt.column( 5 );
                     column.visible( ! column.visible() );
                 }
             },
+            {
+                text: 'BCR-ABL Fusion Mut.',
+                className: 'btn btn-primary toggle-vis mb-1',
+                action: function(e, dt, node, config ) {
+                    var column = dt.column( 6 );
+                    column.visible( ! column.visible() );
+                }
+            },
+            {
+                text: 'Patient Notes',
+                className: 'btn btn-primary toggle-vis mb-1',
+                action: function(e, dt, node, config ) {
+                    var column = dt.column( 7 );
+                    column.visible( ! column.visible() );
+                }
+            },
         ],
         "stripeClasses": [],
-        "lengthMenu": [7, 10, 20, 50],
-        "pageLength": 7
+        "lengthMenu": [5, 10, 20, 50],
+        "pageLength": 10
     } );
 
 

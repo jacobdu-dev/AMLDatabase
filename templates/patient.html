@@ -56,7 +56,7 @@
 
         <div class="usr-tasks ">
             <div class="widget-content widget-content-area">
-                <h3 class="">NSG Mutations</h3> 
+                <h3 class="">NGS/Myeloid Panel Mutations</h3> 
                 <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead>
@@ -65,16 +65,18 @@
                                 <th>Gene</th>
                                 <th>Mutation</th>
                                 <th>Variant Freq.</th>
+                                <th>Tier</th>
                                 <th>Notes</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for mutID, ptID , gene, mutation, vaf, mutnotes in mut_data %}
+                            {% for mutID, ptID , gene, mutation, vaf, tier, mutnotes in mut_data %}
                             <tr>
                                 <td>{{mutID}}</td>
                                 <td>{{gene}}</td>
                                 <td>{{mutation}}</td>
                                 <td>{{vaf}}</td>
+                                <td>{{tier}}</td>
                                 <td>{{mutnotes}}</td>
                             </tr>
                             {% endfor %}

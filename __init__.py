@@ -139,14 +139,14 @@ def patient():
         return redirect(url_for('viewpatients'), error = "No patient ID specified. Redirected to view all patients.")
     else:
         pt_data, arg = grabdata('patient',"ptID = '{}'".format(ptid))
-        mut_data, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
-        #treat_hist, arg = grabdata('treatments',"ptID = '{}'".format(ptid))
+        mut_data, arg = grabdata('ngsMutations',"ptID = '{}'".format(ptid))
+        treat_hist, arg = grabdata('treatments',"ptID = '{}'".format(ptid))
         #bm_sample_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
         #pb_sample_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
         #cbc_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
         #clin_flow_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
         #vial_usage_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
-    return render_template("patient.html", error = error, message = message, ptID = ptid, pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=[], pb_sample_log=[], treat_hist=[], vial_usage_log=[])
+    return render_template("patient.html", error = error, message = message, ptID = ptid, pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=[], pb_sample_log=[], treat_hist=treat_hist, vial_usage_log=[])
 
 
 
@@ -170,21 +170,58 @@ def addmutation():
             gene = str(request.form['gene'])
             mutation = str(request.form['mutation'])
             vaf = float(request.form['vaf'])
+            tier = int(request.form['tier'])
             notes = str(request.form['notes'])
             c, conn = connection()
             c.execute(
-                "INSERT INTO nsgMutations (ptID, gene, mutation, vaf, notes) VALUES (%s, %s, %s, %s, %s)",
-                [ptid, gene, mutation, vaf, notes])
+                "INSERT INTO ngsMutations (ptID, gene, mutation, vaf, tier, notes) VALUES (%s, %s, %s, %s, %s, %s)",
+                [ptid, gene, mutation, vaf, tier, notes])
             conn.commit()
             c.close()
             conn.close()
             gc.collect()
-            return redirect(url_for('patient', ptid = ptid,message = "Mutation added successfully.".format(ptid)))
+            return redirect(url_for('patient', ptid = ptid,message = "Mutation added successfully."))
         return render_template("addmutation.html", error = error, message = message, ptID = ptid)
     except Exception as e:
         error = str(e)
         return render_template("addmutation.html", error = error, message = message)
     return render_template("addmutation.html")
+
+
+@app.route('/add-treatment/', methods=['GET','POST'])
+def addtreatment():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    error = request.args.get('error')
+    message = request.args.get('message')
+    ptid = request.args.get('ptid')
+    if ptid == None: return redirect(url_for('viewpatients'), error = "No patient ID specified. Redirected to view all patients.")
+    try:
+        if request.method == "POST":
+            drug = str(request.form['drug'])
+            startdate = str(request.form['startdate'])
+            enddate = str(request.form['enddate'])
+            notes = str(request.form['notes'])
+            c, conn = connection()
+            c.execute(
+                "INSERT INTO treatments (ptID, drug, startDate, endDate, notes) VALUES (%s, %s, %s, %s, %s)",
+                [ptid, drug, startdate, enddate, notes])
+            conn.commit()
+            c.close()
+            conn.close()
+            gc.collect()
+            return redirect(url_for('patient', ptid = ptid,message = "Treatment added successfully."))
+        return render_template("addtreatment.html", error = error, message = message, ptID = ptid)
+    except Exception as e:
+        error = str(e)
+        return render_template("addtreatment.html", error = error, message = message)
+    return render_template("addtreatment.html")
 
 if __name__ == "__main__":
     app.run()

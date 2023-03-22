@@ -2,6 +2,8 @@ from flask import Flask, render_template, flash, request, url_for, redirect, ses
 import sys
 from FlaskApp.settings import *
 from datetime import datetime
+from passlib.hash import sha256_crypt
+from pymysql.converters import escape_string as thwart
 import pytz
 import gc
 
@@ -56,17 +58,145 @@ def grabdata(table, condition = '*'):
     return sorted(dataset, reverse = True), sqlarg
 
 app = Flask(__name__)
+app.config.update(SECRET_KEY=SESSION_KEY)
 
 booldict = {0: "False", 1: "True", None: "N/A"}
+
+@app.route('/login/', methods=['GET','POST'])
+def login():
+    """
+    Handles login requests.
+    """
+    error = request.args.get('error')
+    message = request.args.get('message')
+    try:
+        if request.method == "POST":
+            email = request.form['email']
+            password = request.form['password']
+            c, conn = connection()
+            x = c.execute("SELECT * FROM users WHERE email = (%s)", [thwart(email)])
+            if int(x) == 0:
+                #if db query returned no rows (no email matches), reject login attempt
+                error = "Login email does not exist in the system!"
+                c.close()
+                conn.close()
+                gc.collect()
+            else:
+                tempdata = c.execute("SELECT * FROM users WHERE email = (%s)", [thwart(email)])
+                fetchpass = c.fetchone()[4]
+                if sha256_crypt.verify(password, fetchpass) is True:
+                    #if a user is authenticated, retrieve userID, account activation status, and name.
+                    session['logged_in'] = True
+                    tempdata = c.execute("SELECT * FROM users WHERE email = (%s)", [thwart(email)])
+                    session['uid'], session['active'], session['name'], session['email'] = c.fetchone()[0:4]
+                    if not session['active']: 
+                        # if an account is no longer active, automatically log out.
+                        session.clear()
+                        c.close()
+                        conn.close()
+                        gc.collect()
+                        error = "Authenticated but account is no longer active. Please contact a current lab member to re-activate account."
+                        return render_template("login.html", error = error, message = message)
+                    c.close()
+                    conn.close()
+                    gc.collect()
+                    return redirect(url_for('homepage'))
+                else:
+                    c.close()
+                    conn.close()
+                    gc.collect()
+                    error = "Login information incorrect, please try again"
+        return render_template("login.html", error = error, message = message)
+    except Exception as e:
+        error = 'An error has occured!'
+        error = str(e)
+        return render_template("login.html", error = error, message = message)
+
+
+@app.route('/logout/')
+def logout():
+    """
+    Handles logout requests.
+    """
+    error = request.args.get('error')
+    message = request.args.get('message')
+    session.clear()
+    message = 'You are logged out!'
+    return redirect(url_for('login', error = error, message = message))
+
+
+
+@app.route('/add-user/', methods=['GET','POST'])
+def adduser():
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    if not session['active']: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    try:
+        if request.method == "POST":
+            email = str(request.form['email'])
+            if str(request.form['password']) != str(request.form['passwordver']): 
+                #Entered passwords must match
+                error = "Dicrepency between entered 'password' and 'verify password'."
+                return render_template("addusers.html", error=error, message=message, name = session['name'], email = session['email'])
+            password = sha256_crypt.encrypt(str(request.form['password']))
+            name = str(request.form['name'])
+            active = convertbool(str(request.form['active']))
+            c, conn = connection()
+            x = c.execute("SELECT * FROM users WHERE email = (%s)", [thwart(email)])
+            if int(x) > 0:
+                error = "Email already exists in the system."
+                return render_template("addusers.html", error=error, message=message, name = session['name'], email = session['email'])
+            else:
+                c.execute(
+                    "INSERT INTO users (active, name, email, password) VALUES (%s, %s, %s, %s)",
+                    [active, thwart(name), thwart(email), thwart(password)])
+                conn.commit()
+                message = "User added successfully!"
+                c.close()
+                conn.close()
+                gc.collect()
+        return render_template("addusers.html", error=error, message=message, name = session['name'], email = session['email'])
+    except Exception as e:
+        error = str(e)
+        return render_template("addusers.html", error=error, message=message, name = session['name'], email = session['email'])
+
+
+@app.route('/view-users/')
+def viewusers():
+    """
+    View all patients in AML database.
+    1. Connect to AML Database
+    2. Select all rows from AML.users table (no password).
+    3. Return view users page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+
+
+    c, conn = connection()
+    c.execute("SELECT uid, active, name, email FROM users")
+    userdata = []
+    for row in c:
+        userdata.append(row)
+    c.close()
+    conn.close()
+    gc.collect()
+    return render_template("viewusers.html", error = error, message = message, name = session['name'], email = session['email'], 
+        userdata = userdata)
+
+
 
 @app.route('/')
 def homepage():
     """
     Default page. Unfinished
     """
+    if 'active' not in session: return redirect(url_for('login', error = str('Restricted area! Please log in!')))
     error = request.args.get('error')
     message = request.args.get('message')
-    return render_template("home.html", error = error, message = message)
+    return render_template("home.html", error = error, message = message, name = session['name'], email = session['email'])
 
 @app.route('/add-patient/', methods=['GET','POST'])
 def addpatient():
@@ -78,6 +208,7 @@ def addpatient():
         Insert entry as new row into AML.patient table and commit changes.
     2. Else, Return add patient page.
     """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
     error = request.args.get('error')
     message = request.args.get('message')
     try:
@@ -99,10 +230,10 @@ def addpatient():
             conn.close()
             gc.collect()
             return redirect(url_for('viewpatients', message = "CIRM {} added to patients table successfully.".format(ptid)))
-        return render_template("addpatient.html", error = error, message = message)
+        return render_template("addpatient.html", error = error, message = message, name = session['name'], email = session['email'])
     except Exception as e:
         error = str(e)
-        return render_template("addpatient.html", error = error, message = message)
+        return render_template("addpatient.html", error = error, message = message, name = session['name'], email = session['email'])
     return render_template("addpatient.html")
 
 @app.route('/view-patients/')
@@ -113,6 +244,7 @@ def viewpatients():
     2. Select all rows from AML.patient table.
     3. Return view patients page.
     """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
     error = request.args.get('error')
     message = request.args.get('message')
     query = request.args.get('query')
@@ -121,7 +253,8 @@ def viewpatients():
         pass
     else:
         returned_data, sqlarg  = grabdata('patient')
-    return render_template("viewpatients.html", error = error, message = message, patients = returned_data, booldict = booldict, sqlquery = sqlarg)
+    return render_template("viewpatients.html", error = error, message = message, name = session['name'], email = session['email'], 
+        patients = returned_data, booldict = booldict, sqlquery = sqlarg)
 
 
 @app.route('/patient/')
@@ -132,6 +265,7 @@ def patient():
     2. Get rows related to patient based on ptid argument: patient, mutations, treatment history, sample log, vial usage log.
     3. Return view patient page.
     """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
     error = request.args.get('error')
     message = request.args.get('message')
     ptid = request.args.get('ptid')
@@ -146,7 +280,8 @@ def patient():
         #cbc_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
         #clin_flow_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
         #vial_usage_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
-    return render_template("patient.html", error = error, message = message, ptID = ptid, pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=[], pb_sample_log=[], treat_hist=treat_hist, vial_usage_log=[])
+    return render_template("patient.html", error = error, message = message, name = session['name'], email = session['email'], ptID = ptid, 
+        pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=[], pb_sample_log=[], treat_hist=treat_hist, vial_usage_log=[])
 
 
 
@@ -161,6 +296,7 @@ def addmutation():
         Insert entry as new row into AML.patient table and commit changes.
     2. Else, Return add patient page.
     """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
     error = request.args.get('error')
     message = request.args.get('message')
     ptid = request.args.get('ptid')
@@ -181,10 +317,11 @@ def addmutation():
             conn.close()
             gc.collect()
             return redirect(url_for('patient', ptid = ptid,message = "Mutation added successfully."))
-        return render_template("addmutation.html", error = error, message = message, ptID = ptid)
+        return render_template("addmutation.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid)
     except Exception as e:
         error = str(e)
-        return render_template("addmutation.html", error = error, message = message)
+        return render_template("addmutation.html", error = error, message = message, name = session['name'], email = session['email'])
     return render_template("addmutation.html")
 
 
@@ -198,6 +335,7 @@ def addtreatment():
         Insert entry as new row into AML.patient table and commit changes.
     2. Else, Return add patient page.
     """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
     error = request.args.get('error')
     message = request.args.get('message')
     ptid = request.args.get('ptid')
@@ -217,10 +355,10 @@ def addtreatment():
             conn.close()
             gc.collect()
             return redirect(url_for('patient', ptid = ptid,message = "Treatment added successfully."))
-        return render_template("addtreatment.html", error = error, message = message, ptID = ptid)
+        return render_template("addtreatment.html", error = error, message = message, name = session['name'], email = session['email'], ptID = ptid)
     except Exception as e:
         error = str(e)
-        return render_template("addtreatment.html", error = error, message = message)
+        return render_template("addtreatment.html", error = error, message = message, name = session['name'], email = session['email'])
     return render_template("addtreatment.html")
 
 if __name__ == "__main__":

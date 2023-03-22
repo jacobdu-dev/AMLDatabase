@@ -1,0 +1,38 @@
+{% extends "header.html" %}
+
+{% block body %}
+
+<div class="card">
+	<div class="card-body">
+		<h3>Add User</h3>
+
+		<form method="post">
+			<div class="form-group">
+				<label for="inputName">Name</label>
+				<input type="text" id="inputName" class="form-control" maxlength="255" name="name" value="{{request.form.name}}" required>
+			</div>
+			<div class="form-group">
+				<label for="inputEmail">Email</label>
+				<input type="text" id="inputEmail" class="form-control" maxlength="255" name="email" value="{{request.form.email}}" required>
+			</div>
+			<div class="form-group">
+				<label for="inputPassword">Password</label>
+				<input type="password" id="inputPassword" class="form-control" maxlength="255" name="password" value="{{request.form.password}}" required>
+			</div>
+			<div class="form-group">
+				<label for="inputPasswordVer">Verify Password</label>
+				<input type="password" id="inputPasswordVer" class="form-control" maxlength="255" name="passwordver" value="{{request.form.passwordver}}" required>
+			</div>
+			<div class="form-group">
+				<label for="inputActive">Active Account</label>
+				<select id="inputActive" class="form-control" name="active" value="{{request.form.active}}">
+					<option>True</option>
+					<option>False</option>
+				</select>
+			</div>
+			<button class="btn btn-primary" type="submit" value="submit">Add User</button>
+		</form>
+	</div>
+</div>
+
+{% endblock %}

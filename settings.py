@@ -11,3 +11,5 @@ def connection():
 	conn = MySQLdb.connect(host=database_host, user = database_user, passwd = database_password, db = database_name)
 	c = conn.cursor()
 	return c, conn
+
+SESSION_KEY = 'KuVE7@E!NcRzHm37Xtwh*r8$VLw%FZ*Ut5I!dM@Wf4mCDx'

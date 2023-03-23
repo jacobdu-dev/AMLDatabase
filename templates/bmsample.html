@@ -27,7 +27,9 @@
 			<div class="form-group">
 				<label for="Vials"># of Vials</label>
 				<input type="number" id="Vials" class="form-control" min="0" max="2147483647" name="vials" value="{{vials}}" required>
-				<button class="btn btn-secondary" onclick="location.href='/take-vial/?ptid={{ptID}}&bmid={{bmID}}'" >Take Vial</button>
+				<a href='/take-vial/?ptid={{ptID}}&sampleid={{bmID}}&sampletype=1'>
+					<button class="btn btn-secondary" type="button">Take Vial</button>
+				</a>
 			</div>
 			<div class="form-group">
 				<label for="CellNumbers"># of Cells</label>

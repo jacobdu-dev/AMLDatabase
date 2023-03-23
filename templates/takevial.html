@@ -1,0 +1,23 @@
+{% extends "header.html" %}
+
+{% block body %}
+
+<div class="card">
+	<div class="card-body">
+		<h3>Logging Vial Usage {{ {0:'PB', 1:'BM'}[sampleType] }} Sample ID {{sampleID}} for CIRM {{ptID}}</h3>
+
+		<form method="post">
+			<div class="form-group">
+				<label for="inputVialsTaken">Number of Vials Used</label>
+				<input type="number" id="inputVialsTaken" class="form-control" name="vialsTaken" value="{{request.form.vialsTaken}}" required>
+			</div>
+			<div class="form-group">
+				<label for="inputExpr">Experiment Description</label>
+				<input type="text" id="inputExpr" class="form-control" maxlength="255" name="expr" value="{{request.form.expr}}" required>
+			</div>
+			<button class="btn btn-primary" type="submit" value="submit">Take Vials from Inventory</button>
+		</form>
+	</div>
+</div>
+
+{% endblock %}

@@ -145,11 +145,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for entryID, ptID, vialsTaken, sampleType, sampleID, user, exp, date in vial_usage_log %}
+                            {% for entryID, vialsTaken, sampleType, sampleID, user, exp, date in vial_usage_log %}
                             <tr>
                                 <td>{{entryID}}</td>
                                 <td>{{vialsTaken}}</td>
-                                <td>{{sampleType}}</td>
+                                <td>{{ {0:'PB', 1:'BM'}[sampleType] }}</td>
                                 <td>{{sampleID}}</td>
                                 <td>{{user}}</td>
                                 <td>{{exp}}</td>
@@ -254,6 +254,45 @@
                                 <td>{{notes}}</td>
                                 <td>
                                     <a href="/pb-collection/?ptid={{ptid}}&pbid={{pbID}}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button class="btn btn-secondary">Add PB/LP Collection</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row layout-top-spacing">        
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <div class="widget-content widget-content-area br-8">
+                <h3 class="">Attachments</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>File ID</th>
+                                <th>Uploaded by</th>
+                                <th>File Name</th>
+                                <th>Upload Date</th>
+                                <th>Description</th>
+                                <th class="no-content">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fileID, name, filename, up_date, description in attachments_log %}
+                            <tr>
+                                <td>{{fileID}}</td>
+                                <td>{{name}}</td>
+                                <td>{{filename}}</td>
+                                <td>{{up_date}}</td>
+                                <td>{{description}}</td>
+                                <td>
+                                    <a href="/get-file/?fileid={{fileID}}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                     </a>
                                 </td>

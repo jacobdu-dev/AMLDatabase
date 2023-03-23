@@ -58,6 +58,26 @@ def grabdata(table, condition = '*'):
     gc.collect()
     return sorted(dataset, reverse = True), sqlarg
 
+def customquery(query):
+    """
+    Selects all rows from a table in the aml database based on input query.
+    Arguments:
+    - query: string of full sql query 
+    Returns:
+    - List of tuples of the rows from results of the query. 
+    """
+    sqlarg = query
+    c, conn = connection()
+    c.execute(sqlarg)
+    dataset = []
+    for row in c:
+        dataset.append(row)
+    c.close()
+    conn.close()
+    gc.collect()
+    return sorted(dataset, reverse = True), sqlarg
+
+
 app = Flask(__name__)
 app.config.update(SECRET_KEY=SESSION_KEY)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000 #Max file transfer size is 16MB
@@ -277,10 +297,18 @@ def patient():
         mut_data, arg = grabdata('ngsMutations',"ptID = '{}'".format(ptid))
         treat_hist, arg = grabdata('treatments',"ptID = '{}'".format(ptid))
         bm_sample_log, arg = grabdata('bmCollection',"ptID = '{}'".format(ptid))
+
         #pb_sample_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
-        #vial_usage_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
+        vialLogQuery = """
+        SELECT vialLog.entryID, vialLog.vialsTaken, vialLog.sampleType, vialLog.sampleID, users.name, vialLog.expr, vialLog.date
+        FROM vialLog 
+        LEFT JOIN users
+        ON vialLog.uID = users.uid
+        WHERE vialLog.ptID = {}
+        """.format(ptid)
+        vial_usage_log, arg = customquery(vialLogQuery)
     return render_template("patient.html", error = error, message = message, name = session['name'], email = session['email'], ptID = ptid, 
-        pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=bm_sample_log, pb_sample_log=[], treat_hist=treat_hist, vial_usage_log=[])
+        pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=bm_sample_log, pb_sample_log=[], treat_hist=treat_hist, vial_usage_log=vial_usage_log)
 
 
 
@@ -458,6 +486,50 @@ def bmsample():
         return render_template("bmsample.html", error = error, message = message, name = session['name'], email = session['email']
             , ptID = ptid, currdate = currdate())
 
+
+
+
+@app.route('/take-vial/', methods=['GET','POST'])
+def takevial():
+    """
+    Add mutation to patient.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.ngsMutations table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    ptid = request.args.get('ptid')
+    sampleType = request.args.get('sampletype')
+    sampleID = request.args.get('sampleid')
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
+    if sampleType not in [0, 1, '0', '1']: return redirect(url_for('patient', error = "Invalid sample type. Redirected to view CIRM {}".format(ptid), ptid=ptid))
+    #should check valid pb/bm ID but it should not be possible to get to this page with an invalid sample ID unless the URL was altered by the user
+    try:
+        if request.method == "POST":
+            vialsTaken = int(request.form['vialsTaken'])
+            expr = str(request.form['expr'])
+            c, conn = connection()
+            x = c.execute("SELECT TAKE_VIAL(%s, %s, %s, %s, %s, %s)", [ptid, session['uid'], vialsTaken, sampleType, sampleID, expr])
+            conn.commit()
+            returned_code = c.fetchone()
+            c.close()
+            conn.close()
+            gc.collect()
+            if returned_code[0] == 0:
+                message = "Vial usage logged"
+            else:
+                error = "Error: Invalid sampleID, sampleType, or vials used is greater than vials remaining. Vial usage was NOT logged."
+            return redirect(url_for('patient', ptid = ptid, message = message, error = error))
+        return render_template("takevial.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, sampleType = sampleType, sampleID = sampleID)
+    except Exception as e:
+        error = str(e)
+        return render_template("takevial.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, sampleType = sampleType, sampleID = sampleID)
 
 
 @app.route('/add-attachment/', methods=['GET','POST'])

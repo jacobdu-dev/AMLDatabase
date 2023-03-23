@@ -21,11 +21,11 @@
 			</div>
 			<div class="form-group">
 				<label for="inputVaf">VAF (%)</label>
-				<input type="number" step="0.01"  id="inputVaf" class="form-control" name="vaf" value="{{request.form.vaf}}" required>
+				<input type="number" step="0.01" min="0" max="100" id="inputVaf" class="form-control" name="vaf" value="{{request.form.vaf}}" required>
 			</div>
 			<div class="form-group">
 				<label for="inputTier">Tier/Prognosis Relavence</label>
-				<input type="number" id="inputTier" class="form-control" name="tier" value="{{request.form.tier}}" required>
+				<input type="number" id="inputTier" class="form-control" name="tier" min="0" max="10" value="{{request.form.tier}}" required>
 			</div>
 			<div class="form-group">
 				<label for="inputNotes">Notes</label>

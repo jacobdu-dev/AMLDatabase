@@ -4,6 +4,7 @@ from FlaskApp.settings import *
 from datetime import datetime
 from passlib.hash import sha256_crypt
 from pymysql.converters import escape_string as thwart
+from io import BytesIO
 import pytz
 import gc
 
@@ -59,6 +60,7 @@ def grabdata(table, condition = '*'):
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY=SESSION_KEY)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000 #Max file transfer size is 16MB
 
 booldict = {0: "False", 1: "True", None: "N/A"}
 
@@ -234,7 +236,6 @@ def addpatient():
     except Exception as e:
         error = str(e)
         return render_template("addpatient.html", error = error, message = message, name = session['name'], email = session['email'])
-    return render_template("addpatient.html")
 
 @app.route('/view-patients/')
 def viewpatients():
@@ -270,18 +271,16 @@ def patient():
     message = request.args.get('message')
     ptid = request.args.get('ptid')
     if ptid == None:
-        return redirect(url_for('viewpatients'), error = "No patient ID specified. Redirected to view all patients.")
+        return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
     else:
         pt_data, arg = grabdata('patient',"ptID = '{}'".format(ptid))
         mut_data, arg = grabdata('ngsMutations',"ptID = '{}'".format(ptid))
         treat_hist, arg = grabdata('treatments',"ptID = '{}'".format(ptid))
-        #bm_sample_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
+        bm_sample_log, arg = grabdata('bmCollection',"ptID = '{}'".format(ptid))
         #pb_sample_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
-        #cbc_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
-        #clin_flow_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
         #vial_usage_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
     return render_template("patient.html", error = error, message = message, name = session['name'], email = session['email'], ptID = ptid, 
-        pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=[], pb_sample_log=[], treat_hist=treat_hist, vial_usage_log=[])
+        pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=bm_sample_log, pb_sample_log=[], treat_hist=treat_hist, vial_usage_log=[])
 
 
 
@@ -289,18 +288,18 @@ def patient():
 @app.route('/add-mutation/', methods=['GET','POST'])
 def addmutation():
     """
-    Add patient to AML database.
+    Add mutation to patient.
     1. Check if current request is a submission request.
         if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
         Connect to AML MySQL database.
-        Insert entry as new row into AML.patient table and commit changes.
+        Insert entry as new row into AML.ngsMutations table and commit changes.
     2. Else, Return add patient page.
     """
     if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
     error = request.args.get('error')
     message = request.args.get('message')
     ptid = request.args.get('ptid')
-    if ptid == None: return redirect(url_for('viewpatients'), error = "No patient ID specified. Redirected to view all patients.")
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
     try:
         if request.method == "POST":
             gene = str(request.form['gene'])
@@ -321,25 +320,25 @@ def addmutation():
             , ptID = ptid)
     except Exception as e:
         error = str(e)
-        return render_template("addmutation.html", error = error, message = message, name = session['name'], email = session['email'])
-    return render_template("addmutation.html")
+        return render_template("addmutation.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid)
 
 
 @app.route('/add-treatment/', methods=['GET','POST'])
 def addtreatment():
     """
-    Add patient to AML database.
+    Add treatment to patient.
     1. Check if current request is a submission request.
         if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
         Connect to AML MySQL database.
-        Insert entry as new row into AML.patient table and commit changes.
+        Insert entry as new row into AML.treatments table and commit changes.
     2. Else, Return add patient page.
     """
     if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
     error = request.args.get('error')
     message = request.args.get('message')
     ptid = request.args.get('ptid')
-    if ptid == None: return redirect(url_for('viewpatients'), error = "No patient ID specified. Redirected to view all patients.")
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
     try:
         if request.method == "POST":
             drug = str(request.form['drug'])
@@ -355,11 +354,172 @@ def addtreatment():
             conn.close()
             gc.collect()
             return redirect(url_for('patient', ptid = ptid,message = "Treatment added successfully."))
-        return render_template("addtreatment.html", error = error, message = message, name = session['name'], email = session['email'], ptID = ptid)
+        return render_template("addtreatment.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid)
     except Exception as e:
         error = str(e)
-        return render_template("addtreatment.html", error = error, message = message, name = session['name'], email = session['email'])
-    return render_template("addtreatment.html")
+        return render_template("addtreatment.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid)
+
+
+
+@app.route('/add-bm-collection/', methods=['GET','POST'])
+def addbmsample():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    ptid = request.args.get('ptid')
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
+    try:
+        if request.method == "POST":
+            doc = str(request.form['doc'])
+            dop = str(request.form['dop'])
+            vials = int(request.form['vials'])
+            cellNumbers = int(request.form['cellNumbers'])
+            stype = int(request.form['stype'])
+            postTransplant = bool(request.form['postTransplant'])
+            blast = float(request.form['blast'])
+            freezedownMedia = str(request.form['freezedownMedia'])
+            location = str(request.form['location'])
+            notes = str(request.form['notes'])
+            c, conn = connection()
+            c.execute(
+                "INSERT INTO bmCollection (ptID, doc, dop, vials, cellNumbers, type, postTransplant, blast, freezedownMedia, location, notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                [ptid, doc, dop, vials, cellNumbers, stype, postTransplant, blast, freezedownMedia, location, notes])
+            conn.commit()
+            c.close()
+            conn.close()
+            gc.collect()
+            return redirect(url_for('patient', ptid = ptid, message = "BM Collection added successfully."))
+        return render_template("addbmsample.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, currdate = currdate())
+    except Exception as e:
+        error = str(e)
+        return render_template("addbmsample.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, currdate = currdate())
+
+
+
+@app.route('/bm-collection/', methods=['GET','POST'])
+def bmsample():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    ptid = request.args.get('ptid')
+    bmid = request.args.get('bmid')
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
+    if bmid == None: return redirect(url_for('patient', ptid = ptid, error = "No BM ID specified. Redirected to view CIRM {}.".format(ptid)))
+    try:
+        if request.method == "POST":
+            doc = str(request.form['doc'])
+            dop = str(request.form['dop'])
+            vials = int(request.form['vials'])
+            cellNumbers = int(request.form['cellNumbers'])
+            stype = int(request.form['stype'])
+            postTransplant = bool(request.form['postTransplant'])
+            blast = float(request.form['blast'])
+            freezedownMedia = str(request.form['freezedownMedia'])
+            location = str(request.form['location'])
+            notes = str(request.form['notes'])
+            c, conn = connection()
+            c.execute(
+                """UPDATE bmCollection SET doc = %s, dop = %s, vials = %s, cellNumbers = %s, type = %s, postTransplant = %s, blast = %s
+                , freezedownMedia = %s, location = %s, notes = %s WHERE bmID =  %s AND ptID = %s""",
+                [doc, dop, vials, cellNumbers, stype, postTransplant, blast, freezedownMedia, location, notes, bmid, ptid])
+            conn.commit()
+            c.close()
+            conn.close()
+            gc.collect()
+            return redirect(url_for('patient', ptid = ptid, message = "BM Collection added successfully."))
+        #Check whether a BM sample exists
+        bm_sample, arg = grabdata('bmCollection',"ptID = '{}' AND bmID = '{}'".format(ptid, bmid))
+        if len(bm_sample) == 0: return redirect(url_for('patient', ptid = ptid, error = "Specified BM ID does not exist for this patient. Redirected to view CIRM {}.".format(ptid)))
+
+        return render_template("bmsample.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, currdate = currdate(), bm_sample = bm_sample)
+    except Exception as e:
+        error = str(e)
+        return render_template("bmsample.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, currdate = currdate())
+
+
+
+@app.route('/add-attachment/', methods=['GET','POST'])
+def addattachment():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    ptid = request.args.get('ptid')
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
+    try:
+        if request.method == "POST":
+            file = request.files['attachment']
+            filename = file.filename
+            data = file.read()
+            description = str(request.form['description'])
+            if filename == '':
+                #Empty files are a waste of resources
+                error = "No file selected"
+                render_template("addattachment.html", error = error, message = message, name = session['name'], email = session['email']
+                    , ptID = ptid)
+            c, conn = connection()
+            c.execute(
+                "INSERT INTO files (ptID, uID, filename, data, description) VALUES (%s, %s, %s, %s, %s)",
+                [ptid, session['uid'], filename, data, description])
+            conn.commit()
+            c.close()
+            conn.close()
+            gc.collect()
+            return redirect(url_for('patient', ptid = ptid, message = "Attachment added successfully."))
+        return render_template("addattachment.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid)
+    except Exception as e:
+        error = str(e)
+        return render_template("addattachment.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid)
+
+@app.route('/get-file/')
+def getfile():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    fileid = request.args.get('fileid')
+    if fileid == None: return redirect(url_for('viewpatients', error = "No file ID specified. Redirected to view all patients."))
+    attachment_data, arg = grabdata('files', 'fileID = {}'.format(fileid))
+    if len(attachment_data) == 0: return redirect(url_for('viewpatients', error = "File ID does not exist. Redirected to view all patients."))
+    return send_file(BytesIO(attachment_data[0][4]), download_name = attachment_data[0][3], as_attachment = True)
 
 if __name__ == "__main__":
     app.run()

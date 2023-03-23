@@ -121,7 +121,7 @@
                         </tbody>
                     </table>
                 </div>
-                <button class="btn btn-secondary">Add Treatment</button>
+                <button class="btn btn-secondary" onclick="location.href='/add-treatment/?ptid={{ptID}}'" >Add Treatment</button>
             </div>
         </div>
     </div>
@@ -180,6 +180,7 @@
                                 <th>Cell #/Vial</th>
                                 <th>Type</th>
                                 <th>Post-Transplant?</th>
+                                <th>Blast %</th>
                                 <th>Cryo Media</th>
                                 <th>Location</th>
                                 <th>Notes</th>
@@ -187,27 +188,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for bmID, ptID, doc, dop, vials, cellNumbers, type, postTransplant,  freezedownMedia, location, clinicalFlow, notes in bm_sample_log %}
+                            {% for bmID, ptID, doc, dop, vials, cellNumbers, type, postTransplant, blast, freezedownMedia, location, clinicalFlow, notes in bm_sample_log %}
                             <tr>
                                 <td>{{bmID}}</td>
                                 <td>{{doc}}</td>
                                 <td>{{dop}}</td>
                                 <td>{{vials}}</td>
                                 <td>{{cellNumbers}}</td>
-                                <td>{{type}}</td>
-                                <td>{{postTransplant}}</td>
+                                <td>{{ {0:'Diagnosis', 1:'Remission', 2: 'Relapse'}[type] }}</td>
+                                <td>{{ booldict[postTransplant] }}</td>
+                                <td>{{blast}}</td>
                                 <td>{{freezedownMedia}}</td>
                                 <td>{{location}}</td>
                                 <td>{{notes}}</td>
                                 <td>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x-circle table-cancel"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                    <a href="/bm-collection/?ptid={{ptID}}&bmid={{bmID}}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    </a>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                <button class="btn btn-secondary">Add BM Collection</button>
+                <button class="btn btn-secondary" onclick="location.href='/add-bm-collection/?ptid={{ptID}}'" >Add BM Collection</button>
             </div>
         </div>
     </div>
@@ -243,13 +247,15 @@
                                 <td>{{vials}}</td>
                                 <td>{{cellNumbers}}</td>
                                 <td>{{booldict[lp]}}</td>
-                                <td>{{type}}</td>
+                                <td>{{ {0:'Diagnosis', 1:'Remission', 2: 'Relapse'}[type] }}</td>
                                 <td>{{postTransplant}}</td>
                                 <td>{{freezedownMedia}}</td>
                                 <td>{{location}}</td>
                                 <td>{{notes}}</td>
                                 <td>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x-circle table-cancel"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                    <a href="/pb-collection/?ptid={{ptid}}&pbid={{pbID}}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    </a>
                                 </td>
                             </tr>
                             {% endfor %}

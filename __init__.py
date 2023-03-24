@@ -297,7 +297,6 @@ def patient():
         mut_data, arg = grabdata('ngsMutations',"ptID = '{}'".format(ptid))
         treat_hist, arg = grabdata('treatments',"ptID = '{}'".format(ptid))
         bm_sample_log, arg = grabdata('bmCollection',"ptID = '{}'".format(ptid))
-
         #pb_sample_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
         vialLogQuery = """
         SELECT vialLog.entryID, vialLog.vialsTaken, vialLog.sampleType, vialLog.sampleID, users.name, vialLog.expr, vialLog.date

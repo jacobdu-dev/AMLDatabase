@@ -306,8 +306,17 @@ def patient():
         WHERE vialLog.ptID = {}
         """.format(ptid)
         vial_usage_log, arg = customquery(vialLogQuery)
+        attachmentsQuery = """
+        SELECT files.fileid, users.name, files.filename, files.date, files.description
+        FROM files 
+        LEFT JOIN users
+        ON files.uID = users.uid
+        WHERE files.ptID = {}
+        """.format(ptid)
+        attachments_log, arg = customquery(attachmentsQuery)
     return render_template("patient.html", error = error, message = message, name = session['name'], email = session['email'], ptID = ptid, 
-        pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=bm_sample_log, pb_sample_log=[], treat_hist=treat_hist, vial_usage_log=vial_usage_log)
+        pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=bm_sample_log, pb_sample_log=[], treat_hist=treat_hist, 
+        vial_usage_log=vial_usage_log, attachments_log = attachments_log)
 
 
 

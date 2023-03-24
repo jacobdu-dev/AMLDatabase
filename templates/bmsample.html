@@ -66,16 +66,206 @@
 				<label for="Notes">Notes</label>
 				<input type="text" id="Notes" class="form-control" maxlength="255" name="notes" value="{{notes}}" required>
 			</div>
+			{% if clinicalFlow == None %}
 			<button class="btn btn-primary" type="submit" value="submit">Update Sample Records</button>
+			<br></br>
+			<a href='/add-clinical-flow/?ptid={{ptID}}&bmid={{bmID}}'>
+				<button class="btn btn-secondary" type="button" >Attach Clinical Flow to Collection</button>
+			</a>
+			{% else %}
+			<br></br>
+			{% for clinicalFlowID, ptID, flowDoc, flowBlast, cd4, cd34, cd64, cd117, hlaDR, lymphoid, tCells, bCells, nkCells, notes in clinicalFlow_data %}
+			<h3>CIRM {{ptID}} BM Flow ID {{clinicalFlowID}}</h3>
+			<div class="form-group">
+				<label for="clinicalFlowID">Clinical Flow ID</label>
+				<input type="number" id="clinicalFlowID" class="form-control" name="clinicalFlowID" value="{{clinicalFlowID}}" readonly>
+			</div>
+			<h4>Blasts</h4>
+			<div class="form-group">
+				<label for="BlastGate">Blast Gate Frequency (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="BlastGate" class="form-control" name="flowBlast" value="{{flowBlast}}">
+			</div>
+			<div class="form-group">
+				<label for="FlowDOC">Date of Collection</label>
+				<input class="form-control" id="FlowDOC" type="date" name="flowDoc" value="{{flowDoc}}" required>
+			</div>
+			<div class="form-group">
+				<label for="CD4">CD4</label>
+				<select id="CD4" class="form-control" name="cd4" value="{{cd4}}" autocomplete="off">
+					{% if cd4 == '' %}
+					<option value = '' selected>N/A</option>
+					{% else %}
+					<option value = ''>N/A</option>
+					{% endif %}
+					{% if cd4 == '-' %}
+					<option value = '-' selected>Negative</option>
+					{% else %}
+					<option value = '-'>Negative</option>
+					{% endif %}
+					{% if cd4 == 'W' %}
+					<option value = 'W' selected>Weak</option>
+					{% else %}
+					<option value = 'W'>Weak</option>
+					{% endif %}
+					{% if cd4 == 'V' %}
+					<option value = 'V' selected>Variable</option>
+					{% else %}
+					<option value = 'V'>Variable</option>
+					{% endif %}
+					{% if cd4 == '+' %}
+					<option value = '+' selected>Positive</option>
+					{% else %}
+					<option value = '+'>Positive</option>
+					{% endif %}
+					
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="CD34">CD34</label>
+				<select id="CD34" class="form-control" name="cd34" value="{{cd34}}" autocomplete="off">
+					{% if cd34 == '' %}
+					<option value = '' selected>N/A</option>
+					{% else %}
+					<option value = ''>N/A</option>
+					{% endif %}
+					{% if cd34 == '-' %}
+					<option value = '-' selected>Negative</option>
+					{% else %}
+					<option value = '-'>Negative</option>
+					{% endif %}
+					{% if cd34 == 'W' %}
+					<option value = 'W' selected>Weak</option>
+					{% else %}
+					<option value = 'W'>Weak</option>
+					{% endif %}
+					{% if cd34 == 'V' %}
+					<option value = 'V' selected>Variable</option>
+					{% else %}
+					<option value = 'V'>Variable</option>
+					{% endif %}
+					{% if cd34 == '+' %}
+					<option value = '+' selected>Positive</option>
+					{% else %}
+					<option value = '+'>Positive</option>
+					{% endif %}
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="CD64">CD64</label>
+				<select id="CD64" class="form-control" name="cd64" value="{{cd64}}" autocomplete="off">
+					{% if cd64 == '' %}
+					<option value = '' selected>N/A</option>
+					{% else %}
+					<option value = ''>N/A</option>
+					{% endif %}
+					{% if cd64 == '-' %}
+					<option value = '-' selected>Negative</option>
+					{% else %}
+					<option value = '-'>Negative</option>
+					{% endif %}
+					{% if cd64 == 'W' %}
+					<option value = 'W' selected>Weak</option>
+					{% else %}
+					<option value = 'W'>Weak</option>
+					{% endif %}
+					{% if cd64 == 'V' %}
+					<option value = 'V' selected>Variable</option>
+					{% else %}
+					<option value = 'V'>Variable</option>
+					{% endif %}
+					{% if cd64 == '+' %}
+					<option value = '+' selected>Positive</option>
+					{% else %}
+					<option value = '+'>Positive</option>
+					{% endif %}
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="CD117">CD117</label>
+				<select id="CD117" class="form-control" name="cd117" value="{{cd117}}" autocomplete="off">
+					{% if cd117 == '' %}
+					<option value = '' selected>N/A</option>
+					{% else %}
+					<option value = ''>N/A</option>
+					{% endif %}
+					{% if cd117 == '-' %}
+					<option value = '-' selected>Negative</option>
+					{% else %}
+					<option value = '-'>Negative</option>
+					{% endif %}
+					{% if cd117 == 'W' %}
+					<option value = 'W' selected>Weak</option>
+					{% else %}
+					<option value = 'W'>Weak</option>
+					{% endif %}
+					{% if cd117 == 'V' %}
+					<option value = 'V' selected>Variable</option>
+					{% else %}
+					<option value = 'V'>Variable</option>
+					{% endif %}
+					{% if cd117 == '+' %}
+					<option value = '+' selected>Positive</option>
+					{% else %}
+					<option value = '+'>Positive</option>
+					{% endif %}
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="HlaDR">HLA-DR</label>
+				<select id="HlaDR" class="form-control" name="hlaDR" value="{{hlaDR}}" autocomplete="off">
+					{% if hlaDR == '' %}
+					<option value = '' selected>N/A</option>
+					{% else %}
+					<option value = ''>N/A</option>
+					{% endif %}
+					{% if hlaDR == '-' %}
+					<option value = '-' selected>Negative</option>
+					{% else %}
+					<option value = '-'>Negative</option>
+					{% endif %}
+					{% if hlaDR == 'W' %}
+					<option value = 'W' selected>Weak</option>
+					{% else %}
+					<option value = 'W'>Weak</option>
+					{% endif %}
+					{% if hlaDR == 'V' %}
+					<option value = 'V' selected>Variable</option>
+					{% else %}
+					<option value = 'V'>Variable</option>
+					{% endif %}
+					{% if hlaDR == '+' %}
+					<option value = '+' selected>Positive</option>
+					{% else %}
+					<option value = '+'>Positive</option>
+					{% endif %}
+				</select>
+			</div>
+			<h4>Lymphocytes</h4>
+			<div class="form-group">
+				<label for="Lymphoid">Lymphoid Gate Frequency (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="Lymphoid" class="form-control" name="lymphoid" value="{{lymphoid}}">
+			</div>
+			<div class="form-group">
+				<label for="TCells">T-Cell Frequency (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="TCells" class="form-control" name="tCells" value="{{tCells}}">
+			</div>
+			<div class="form-group">
+				<label for="BCells">B-Cell Frequency (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="BCells" class="form-control" name="bCells" value="{{bCells}}">
+			</div>
+			<div class="form-group">
+				<label for="NKCells">NK-Cell Frequency (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="NKCells" class="form-control" name="nkCells" value="{{nkCells}}">
+			</div>
+			<div class="form-group">
+				<label for="FlowNotes">Notes</label>
+				<input type="text" id="FlowNotes" class="form-control" maxlength="255" name="flowNotes" value="{{flowNotes}}">
+			</div>
+			<button class="btn btn-primary" type="submit" value="submit">Update Sample Records</button>
+			{% endfor %}
+			{% endif %}
+			{% endfor %}
 		</form>
-		<br></br>
-
-		{% if clinicalFlow == None %}
-		<button class="btn btn-secondary" onclick="location.href='/add-clinical-flow/?ptid={{ptID}}&bmid={{bmID}}'" >Attach Clinical Flow to Collection</button>
-		{% else %}
-		<button class="btn btn-secondary" onclick="location.href='/clinical-flow/?ptid={{ptID}}&bmid={{bmID}}'" >View Attached Clinical Flow</button>
-		{% endif %}
-		{% endfor %}
 
 
 	</div>

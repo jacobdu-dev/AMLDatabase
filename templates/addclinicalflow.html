@@ -1,0 +1,99 @@
+{% extends "header.html" %}
+
+{% block body %}
+
+<div class="card">
+	<div class="card-body">
+		<h3>Add Clinical Flow to CIRM {{ptID}} BM ID {{bmID}}</h3>
+
+		<form method="post">
+			<div class="form-group">
+				<label for="patientID">CIRM Number/Patient ID</label>
+				<input type="number" id="patientID" class="form-control" name="ptID" value="{{ptID}}" readonly>
+			</div>
+			<div class="form-group">
+				<label for="inputDOC">Date of Collection</label>
+				<input class="form-control" id="inputDOC" type="date" name="doc" value="{{currdate}}" required>
+			</div>
+			<h4>Blasts</h4>
+			<div class="form-group">
+				<label for="inputBlast">Blast Gate Frequency (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="inputBlast" class="form-control" name="blast" value="{{request.form.blast}}">
+			</div>
+			<div class="form-group">
+				<label for="inputCD4">CD4</label>
+				<select id="inputCD4" class="form-control" name="cd4" value="{{request.form.cd4}}" >
+					<option value = ''>N/A</option>
+					<option value = '-'>Negative</option>
+					<option value = 'W'>Weak</option>
+					<option value = 'V'>Variable</option>
+					<option value = '+'>Positive</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="inputCD34">CD34</label>
+				<select id="inputCD34" class="form-control" name="cd34" value="{{request.form.cd34}}" >
+					<option value = ''>N/A</option>
+					<option value = '-'>Negative</option>
+					<option value = 'W'>Weak</option>
+					<option value = 'V'>Variable</option>
+					<option value = '+'>Positive</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="inputCD64">CD64</label>
+				<select id="inputCD64" class="form-control" name="cd64" value="{{request.form.cd64}}" >
+					<option value = ''>N/A</option>
+					<option value = '-'>Negative</option>
+					<option value = 'W'>Weak</option>
+					<option value = 'V'>Variable</option>
+					<option value = '+'>Positive</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="inputCD117">CD117</label>
+				<select id="inputCD117" class="form-control" name="cd117" value="{{request.form.cd117}}" >
+					<option value = ''>N/A</option>
+					<option value = '-'>Negative</option>
+					<option value = 'W'>Weak</option>
+					<option value = 'V'>Variable</option>
+					<option value = '+'>Positive</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="inputHlaDR">HLA-DR</label>
+				<select id="inputHlaDR" class="form-control" name="hlaDR" value="{{request.form.hlaDR}}" >
+					<option value = ''>N/A</option>
+					<option value = '-'>Negative</option>
+					<option value = 'W'>Weak</option>
+					<option value = 'V'>Variable</option>
+					<option value = '+'>Positive</option>
+				</select>
+			</div>
+			<h4>Lymphocytes</h4>
+			<div class="form-group">
+				<label for="inputLymphoid">Lymphoid Gate Frequency (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="inputLymphoid" class="form-control" name="lymphoid" value="{{request.form.lymphoid}}">
+			</div>
+			<div class="form-group">
+				<label for="inputTCells">T-Cell Frequency (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="inputTCells" class="form-control" name="tCells" value="{{request.form.tCells}}">
+			</div>
+			<div class="form-group">
+				<label for="inputBCells">B-Cell Frequency (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="inputBCells" class="form-control" name="bCells" value="{{request.form.bCells}}">
+			</div>
+			<div class="form-group">
+				<label for="inputNKCells">NK-Cell Frequency (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="inputNKCells" class="form-control" name="nkCells" value="{{request.form.nkCells}}">
+			</div>
+			<div class="form-group">
+				<label for="inputNotes">Notes</label>
+				<input type="text" id="inputNotes" class="form-control" maxlength="255" name="notes" value="{{request.form.notes}}" required>
+			</div>
+			<button class="btn btn-primary" type="submit" value="submit">Add Clinical Flow to CIRM {{ptID}} BM ID {{bmID}}</button>
+		</form>
+	</div>
+</div>
+
+{% endblock %}

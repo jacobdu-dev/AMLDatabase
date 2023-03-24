@@ -232,6 +232,7 @@
                                 <th>LP Sample</th>
                                 <th>Type</th>
                                 <th>Post-Transplant?</th>
+                                <th>Blast %</th>
                                 <th>Cryo Media</th>
                                 <th>Location</th>
                                 <th>Notes</th>
@@ -239,7 +240,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for pbID, ptID, doc, dop, vials, cellNumbers, lp, type, postTransplant, freezedownMedia, location, cbcID, notes in pb_sample_log %}
+                            {% for pbID, ptID, doc, dop, vials, cellNumbers, lp, type, postTransplant, blast, freezedownMedia, location, cbcID, notes in pb_sample_log %}
                             <tr>
                                 <td>{{pbID}}</td>
                                 <td>{{doc}}</td>
@@ -249,11 +250,12 @@
                                 <td>{{booldict[lp]}}</td>
                                 <td>{{ {0:'Diagnosis', 1:'Remission', 2: 'Relapse'}[type] }}</td>
                                 <td>{{postTransplant}}</td>
+                                <td>{{blast}}</td>
                                 <td>{{freezedownMedia}}</td>
                                 <td>{{location}}</td>
                                 <td>{{notes}}</td>
                                 <td>
-                                    <a href="/pb-collection/?ptid={{ptid}}&pbid={{pbID}}">
+                                    <a href="/pb-collection/?ptid={{ptID}}&pbid={{pbID}}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                     </a>
                                 </td>
@@ -262,7 +264,7 @@
                         </tbody>
                     </table>
                 </div>
-                <button class="btn btn-secondary">Add PB/LP Collection</button>
+                <button class="btn btn-secondary" onclick="location.href='/add-pb-collection/?ptid={{ptID}}'" >Add PB/LP Collection</button>
             </div>
         </div>
     </div>

@@ -1,0 +1,173 @@
+{% extends "header.html" %}
+
+{% block body %}
+
+<div class="card">
+	<div class="card-body">
+		{% for pbID, ptID, doc, dop, vials, cellNumbers, lp, stype, postTransplant, blast, freezedownMedia, location, cbc, notes in pb_sample %}
+		<h3>CIRM {{ptID}} PB Collection ID {{pbID}}</h3>
+
+		<form method="post">
+			<div class="form-group">
+				<label for="pbID">PB Collection ID</label>
+				<input type="number" id="pbID" class="form-control" name="pbID" value="{{pbID}}" readonly>
+			</div>
+			<div class="form-group">
+				<label for="patientID">CIRM Number/Patient ID</label>
+				<input type="number" id="patientID" class="form-control" name="ptID" value="{{ptID}}" readonly>
+			</div>
+			<div class="form-group">
+				<label for="DOC">Date of Collection</label>
+				<input class="form-control" id="DOC" type="date" name="doc" value="{{doc}}" required>
+			</div>
+			<div class="form-group">
+				<label for="DOP">Date of Processing</label>
+				<input class="form-control" id="DOP" type="date" name="dop" value="{{dop}}" required>
+			</div>
+			<div class="form-group">
+				<label for="Vials"># of Vials</label>
+				<input type="number" id="Vials" class="form-control" min="0" max="2147483647" name="vials" value="{{vials}}" required>
+				<a href='/take-vial/?ptid={{ptID}}&sampleid={{pbID}}&sampletype=0'>
+					<button class="btn btn-secondary" type="button">Take Vial</button>
+				</a>
+			</div>
+			<div class="form-group">
+				<label for="CellNumbers"># of Cells</label>
+				<input type="number" id="CellNumbers" class="form-control" min="0" max="2147483647" name="cellNumbers" value="{{cellNumbers}}" required>
+			</div>
+			<div class="form-group">
+				<label for="LP">LP Sample?</label>
+				<select id="LP" class="form-control" name="lp" value="{{lp}}" autocomplete="off" required>
+					{% if lp == 0 %}
+					<option value = 0 selected>False</option>
+					{% else %}
+					<option value = 0>False</option>
+					{% endif %}
+					{% if lp == 1 %}
+					<option value = 0 selected>True</option>
+					{% else %}
+					<option value = 0>True</option>
+					{% endif %}
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="Type">Sample Disease Status</label>
+				<select id="Type" class="form-control" name="stype" value="{{stype}}" autocomplete="off" required>
+					{% if stype == 0 %}
+					<option value = 0 selected>Diagnosis</option>
+					{% else %}
+					<option value = 0>Diagnosis</option>
+					{% endif %}
+					{% if stype == 1 %}
+					<option value = 1 selected>Remission</option>
+					{% else %}
+					<option value = 1>Remission</option>
+					{% endif %}
+					{% if stype == 2 %}
+					<option value = 2 selected>Relapse</option>
+					{% else %}
+					<option value = 2>Relapse</option>
+					{% endif %}
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="PostTransplant">Post Transplant Sample?</label>
+				<select id="PostTransplant" class="form-control" name="postTransplant" value="{{postTransplant}}" autocomplete="off" required>
+					{% if postTransplant == 0 %}
+					<option value = 0 selected>False</option>
+					{% else %}
+					<option value = 0>False</option>
+					{% endif %}
+					{% if postTransplant == 1 %}
+					<option value = 0 selected>True</option>
+					{% else %}
+					<option value = 0>True</option>
+					{% endif %}
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="Blast">Blast Frequency (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="Blast" class="form-control" name="blast" value="{{blast}}">
+			</div>
+			<div class="form-group">
+				<label for="FreezedownMedia">Cryopreservation Media</label>
+				<input type="text" id="FreezedownMedia" class="form-control" maxlength="255" name="freezedownMedia" value="{{freezedownMedia}}" required>
+			</div>
+			<div class="form-group">
+				<label for="Location">Storage Location</label>
+				<input type="text" id="Location" class="form-control" maxlength="4" name="location" value="{{location}}" required>
+			</div>
+			<div class="form-group">
+				<label for="Notes">Notes</label>
+				<input type="text" id="Notes" class="form-control" maxlength="255" name="notes" value="{{notes}}" required>
+			</div>
+			{% if cbc == None %}
+			<button class="btn btn-primary" type="submit" value="submit">Update Sample Records</button>
+			<br></br>
+			<a href='/add-cbc/?ptid={{ptID}}&pbid={{pbID}}'>
+				<button class="btn btn-secondary" type="button" >Attach CBC to Collection</button>
+			</a>
+			{% else %}
+			<br></br>
+			{% for cbcID, ptID, cbcDoc, wbc, rbc, cbcBlast, platlets, neutrophils, lymphocytes, monocytes, eosinophils, basophils, cbcNotes in cbc_data %}
+			<h3>CIRM {{ptID}} PB CBC ID {{cbcID}}</h3>
+			<div class="form-group">
+				<label for="cbcID">CBC ID</label>
+				<input type="number" id="cbcID" class="form-control" name="cbcID" value="{{cbcID}}" readonly>
+			</div>
+			<div class="form-group">
+				<label for="cbcDoc">Date of Collection</label>
+				<input class="form-control" id="cbcDoc" type="date" name="cbcDoc" value="{{cbcDoc}}" required>
+			</div>
+			<div class="form-group">
+				<label for="wbc">WBC Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="wbc" class="form-control" name="wbc" value="{{wbc}}">
+			</div>
+			<div class="form-group">
+				<label for="rbc">RBC Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="rbc" class="form-control" name="rbc" value="{{rbc}}">
+			</div>
+			<div class="form-group">
+				<label for="platlets">Platlet Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="rbc" class="form-control" name="platlets" value="{{platlets}}">
+			</div>
+			<div class="form-group">
+				<label for="neutrophils">Neutrophil Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="neutrophils" class="form-control" name="neutrophils" value="{{neutrophils}}">
+			</div>
+			<div class="form-group">
+				<label for="lymphocytes">Lymphocyte Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="lymphocytes" class="form-control" name="lymphocytes" value="{{lymphocytes}}">
+			</div>
+			<div class="form-group">
+				<label for="eosinophils">Eosinophil Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="eosinophils" class="form-control" name="eosinophils" value="{{eosinophils}}">
+			</div>
+			<div class="form-group">
+				<label for="basophils">Basophil Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="basophils" class="form-control" name="basophils" value="{{basophils}}">
+			</div>
+			<h4>Myeloid Cells</h4>
+			<div class="form-group">
+				<label for="cbcBlast">Blasts</label>
+				<input type="number" step="0.01" min="0" id="cbcBlast" class="form-control" name="cbcBlast" value="{{cbcBlast}}">
+			</div>
+			<div class="form-group">
+				<label for="monocytes">Monocytes</label>
+				<input type="number" step="0.01" min="0" id="monocytes" class="form-control" name="monocytes" value="{{monocytes}}">
+			</div>
+			<div class="form-group">
+				<label for="cbcNotes">Notes</label>
+				<input type="text" id="cbcNotes" class="form-control" maxlength="255" name="cbcNotes" value="{{cbcNotes}}">
+			</div>
+			<button class="btn btn-primary" type="submit" value="submit">Update Sample Records</button>
+			{% endfor %}
+			{% endif %}
+			{% endfor %}
+		</form>
+
+
+	</div>
+</div>
+
+{% endblock %}

@@ -4,7 +4,7 @@
 
 <div class="card">
 	<div class="card-body">
-		<h3>Add BM Collection to CIRM {{ptID}}</h3>
+		<h3>Add PB Collection to CIRM {{ptID}}</h3>
 
 		<form method="post">
 			<div class="form-group">
@@ -28,8 +28,15 @@
 				<input type="number" id="inputCellNumbers" class="form-control" min="0" max="2147483647" name="cellNumbers" value="{{request.form.cellNumbers}}" required>
 			</div>
 			<div class="form-group">
+				<label for="inputLP">LP Sample?</label>
+				<select id="inputLP" class="form-control" name="lp" value="{{request.form.lp}}" required>
+					<option value = 0>False</option>
+					<option value = 1>True</option>
+				</select>
+			</div>
+			<div class="form-group">
 				<label for="inputType">Sample Disease Status</label>
-				<select id="inputType" class="form-control" name="stype" required>
+				<select id="inputType" class="form-control" name="stype" value="{{request.form.stype}}" required>
 					<option value = 0>Diagnosis</option>
 					<option value = 1>Remission</option>
 					<option value = 2>Relapse</option>
@@ -37,7 +44,7 @@
 			</div>
 			<div class="form-group">
 				<label for="inputPostTransplant">Post Transplant Sample?</label>
-				<select id="inputPostTransplant" class="form-control" name="postTransplant" required>
+				<select id="inputPostTransplant" class="form-control" name="postTransplant" value="{{request.form.postTransplant}}" required>
 					<option value = 0>False</option>
 					<option value = 1>True</option>
 				</select>
@@ -58,7 +65,7 @@
 				<label for="inputNotes">Notes</label>
 				<input type="text" id="inputNotes" class="form-control" maxlength="255" name="notes" value="{{request.form.notes}}" required>
 			</div>
-			<button class="btn btn-primary" type="submit" value="submit">Add BM Collection to CIRM {{ptID}}</button>
+			<button class="btn btn-primary" type="submit" value="submit">Add PB Collection to CIRM {{ptID}}</button>
 		</form>
 	</div>
 </div>

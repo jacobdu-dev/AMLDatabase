@@ -37,17 +37,37 @@
 			</div>
 			<div class="form-group">
 				<label for="Type">Sample Disease Status</label>
-				<select id="Type" class="form-control" name="stype" value="{{stype}}" required>
+				<select id="Type" class="form-control" name="stype" value="{{stype}}"  autocomplete="off" required>
+					{% if stype == 0 %}
+					<option value = 0 selected>Diagnosis</option>
+					{% else %}
 					<option value = 0>Diagnosis</option>
+					{% endif %}
+					{% if stype == 1 %}
+					<option value = 1 selected>Remission</option>
+					{% else %}
 					<option value = 1>Remission</option>
+					{% endif %}
+					{% if stype == 2 %}
+					<option value = 2 selected>Relapse</option>
+					{% else %}
 					<option value = 2>Relapse</option>
+					{% endif %}
 				</select>
 			</div>
 			<div class="form-group">
 				<label for="PostTransplant">Post Transplant Sample?</label>
-				<select id="PostTransplant" class="form-control" name="postTransplant" value="{{postTransplant}}" required>
-					<option>False</option>
-					<option>True</option>
+				<select id="PostTransplant" class="form-control" name="postTransplant" value="{{postTransplant}}" autocomplete="off" required>
+					{% if postTransplant == 0 %}
+					<option value = 0 selected>False</option>
+					{% else %}
+					<option value = 0>False</option>
+					{% endif %}
+					{% if postTransplant == 1 %}
+					<option value = 0 selected>True</option>
+					{% else %}
+					<option value = 0>True</option>
+					{% endif %}
 				</select>
 			</div>
 			<div class="form-group">
@@ -74,7 +94,7 @@
 			</a>
 			{% else %}
 			<br></br>
-			{% for clinicalFlowID, ptID, flowDoc, flowBlast, cd4, cd34, cd64, cd117, hlaDR, lymphoid, tCells, bCells, nkCells, notes in clinicalFlow_data %}
+			{% for clinicalFlowID, ptID, flowDoc, flowBlast, cd4, cd34, cd64, cd117, hlaDR, lymphoid, tCells, bCells, nkCells, flowNotes in clinicalFlow_data %}
 			<h3>CIRM {{ptID}} BM Flow ID {{clinicalFlowID}}</h3>
 			<div class="form-group">
 				<label for="clinicalFlowID">Clinical Flow ID</label>

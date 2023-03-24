@@ -1,0 +1,64 @@
+{% extends "header.html" %}
+
+{% block body %}
+
+<div class="card">
+	<div class="card-body">
+		<h3>Add CBC to CIRM {{ptID}} PB ID {{pbID}}</h3>
+
+		<form method="post">
+			<div class="form-group">
+				<label for="patientID">CIRM Number/Patient ID</label>
+				<input type="number" id="patientID" class="form-control" name="ptID" value="{{ptID}}" readonly>
+			</div>
+			<div class="form-group">
+				<label for="inputDOC">Date of Collection</label>
+				<input class="form-control" id="inputDOC" type="date" name="doc" value="{{currdate}}" required>
+			</div>
+			<div class="form-group">
+				<label for="wbc">WBC Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="wbc" class="form-control" name="wbc" value="{{request.form.wbc}}">
+			</div>
+			<div class="form-group">
+				<label for="rbc">RBC Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="rbc" class="form-control" name="rbc" value="{{request.form.rbc}}">
+			</div>
+			<div class="form-group">
+				<label for="platlets">Platlet Count (in 10E9)</label>
+				<input type="platlets" step="0.01" min="0" id="rbc" class="form-control" name="platlets" value="{{request.form.platlets}}">
+			</div>
+			<div class="form-group">
+				<label for="neutrophils">Neutrophil Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="neutrophils" class="form-control" name="neutrophils" value="{{request.form.neutrophils}}">
+			</div>
+			<div class="form-group">
+				<label for="lymphocytes">Lymphocyte Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="lymphocytes" class="form-control" name="lymphocytes" value="{{request.form.lymphocytes}}">
+			</div>
+			<div class="form-group">
+				<label for="eosinophils">Eosinophil Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="eosinophils" class="form-control" name="eosinophils" value="{{request.form.eosinophils}}">
+			</div>
+			<div class="form-group">
+				<label for="basophils">Basophil Count (in 10E9)</label>
+				<input type="number" step="0.01" min="0" id="basophils" class="form-control" name="basophils" value="{{request.form.basophils}}">
+			</div>
+			<h4>Myeloid Cells</h4>
+			<div class="form-group">
+				<label for="cbcBlast">Blasts</label>
+				<input type="number" step="0.01" min="0" id="cbcBlast" class="form-control" name="cbcBlast" value="{{request.form.cbcBlast}}">
+			</div>
+			<div class="form-group">
+				<label for="monocytes">Monocytes</label>
+				<input type="number" step="0.01" min="0" id="monocytes" class="form-control" name="monocytes" value="{{request.form.monocytes}}">
+			</div>
+			<div class="form-group">
+				<label for="inputNotes">Notes</label>
+				<input type="text" id="inputNotes" class="form-control" maxlength="255" name="notes" value="{{request.form.notes}}" required>
+			</div>
+			<button class="btn btn-primary" type="submit" value="submit">Add CBC to CIRM {{ptID}} PB ID {{pbID}}</button>
+		</form>
+	</div>
+</div>
+
+{% endblock %}

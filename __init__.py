@@ -297,7 +297,7 @@ def patient():
         mut_data, arg = grabdata('ngsMutations',"ptID = '{}'".format(ptid))
         treat_hist, arg = grabdata('treatments',"ptID = '{}'".format(ptid))
         bm_sample_log, arg = grabdata('bmCollection',"ptID = '{}'".format(ptid))
-        #pb_sample_log, arg = grabdata('nsgMutations',"ptID = '{}'".format(ptid))
+        pb_sample_log, arg = grabdata('pbCollection',"ptID = '{}'".format(ptid))
         vialLogQuery = """
         SELECT vialLog.entryID, vialLog.vialsTaken, vialLog.sampleType, vialLog.sampleID, users.name, vialLog.expr, vialLog.date
         FROM vialLog 
@@ -315,7 +315,7 @@ def patient():
         """.format(ptid)
         attachments_log, arg = customquery(attachmentsQuery)
     return render_template("patient.html", error = error, message = message, name = session['name'], email = session['email'], ptID = ptid, 
-        pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=bm_sample_log, pb_sample_log=[], treat_hist=treat_hist, 
+        pt_data = pt_data, booldict = booldict, mut_data=mut_data, bm_sample_log=bm_sample_log, pb_sample_log = pb_sample_log, treat_hist=treat_hist, 
         vial_usage_log=vial_usage_log, attachments_log = attachments_log)
 
 
@@ -524,135 +524,7 @@ def bmsample():
             , ptID = ptid, currdate = currdate(), bm_sample = [], clinicalFlow_data = [])
 
 
-
-@app.route('/add-pb-collection/', methods=['GET','POST'])
-def addpbsample():
-    """
-    Add patient to AML database.
-    1. Check if current request is a submission request.
-        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
-        Connect to AML MySQL database.
-        Insert entry as new row into AML.patient table and commit changes.
-    2. Else, Return add patient page.
-    """
-    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
-    error = request.args.get('error')
-    message = request.args.get('message')
-    ptid = request.args.get('ptid')
-    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
-    try:
-        if request.method == "POST":
-            doc = str(request.form['doc'])
-            dop = str(request.form['dop'])
-            vials = int(request.form['vials'])
-            cellNumbers = int(request.form['cellNumbers'])
-            stype = int(request.form['stype'])
-            postTransplant = bool(request.form['postTransplant'])
-            blast = float(request.form['blast'])
-            freezedownMedia = str(request.form['freezedownMedia'])
-            location = str(request.form['location'])
-            notes = str(request.form['notes'])
-            c, conn = connection()
-            c.execute(
-                "INSERT INTO bmCollection (ptID, doc, dop, vials, cellNumbers, type, postTransplant, blast, freezedownMedia, location, notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                [ptid, doc, dop, vials, cellNumbers, stype, postTransplant, blast, freezedownMedia, location, notes])
-            conn.commit()
-            c.close()
-            conn.close()
-            gc.collect()
-            return redirect(url_for('patient', ptid = ptid, message = "BM Collection added successfully."))
-        return render_template("addbmsample.html", error = error, message = message, name = session['name'], email = session['email']
-            , ptID = ptid, currdate = currdate())
-    except Exception as e:
-        error = str(e)
-        return render_template("addbmsample.html", error = error, message = message, name = session['name'], email = session['email']
-            , ptID = ptid, currdate = currdate())
-
-
-
-@app.route('/pb-collection/', methods=['GET','POST'])
-def pbsample():
-    """
-    Add patient to AML database.
-    1. Check if current request is a submission request.
-        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
-        Connect to AML MySQL database.
-        Insert entry as new row into AML.patient table and commit changes.
-    2. Else, Return add patient page.
-    """
-    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
-    error = request.args.get('error')
-    message = request.args.get('message')
-    ptid = request.args.get('ptid')
-    bmid = request.args.get('bmid')
-    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
-    if bmid == None: return redirect(url_for('patient', ptid = ptid, error = "No BM ID specified. Redirected to view CIRM {}.".format(ptid)))
-    try:
-        if request.method == "POST":
-            #Handle BM sample entry update
-            doc = str(request.form['doc'])
-            dop = str(request.form['dop'])
-            vials = int(request.form['vials'])
-            cellNumbers = int(request.form['cellNumbers'])
-            stype = int(request.form['stype'])
-            postTransplant = bool(request.form['postTransplant'])
-            blast = float(request.form['blast'])
-            freezedownMedia = str(request.form['freezedownMedia'])
-            location = str(request.form['location'])
-            notes = str(request.form['notes'])
-            c, conn = connection()
-            c.execute(
-                """UPDATE bmCollection SET doc = %s, dop = %s, vials = %s, cellNumbers = %s, type = %s, postTransplant = %s, blast = %s
-                , freezedownMedia = %s, location = %s, notes = %s WHERE bmID =  %s AND ptID = %s""",
-                [doc, dop, vials, cellNumbers, stype, postTransplant, blast, freezedownMedia, location, notes, bmid, ptid])
-            conn.commit()
-            c.close()
-            conn.close()
-            gc.collect()
-            #Handle Clinical Flow Entry if one exists
-            if 'flowBlast' in request.form:
-                clinicalFlowID = request.form['clinicalFlowID']
-                flowBlast = request.form['flowBlast']
-                flowDoc = request.form['flowDoc']
-                cd4 = request.form['cd4']
-                cd34 = request.form['cd34']
-                cd64 = request.form['cd64']
-                cd117 = request.form['cd117']
-                hlaDR = request.form['hlaDR']
-                lymphoid = request.form['lymphoid']
-                tCells = request.form['tCells']
-                bCells = request.form['bCells']
-                nkCells = request.form['nkCells']
-                flowNotes = str(request.form['flowNotes'])
-                c, conn = connection()
-                c.execute(
-                    """UPDATE clinicalFlow SET doc = %s, blasts = %s, cd4 = %s, cd34 = %s, cd64 = %s, cd117 = %s, hlaDR = %s
-                    , lymphoid = %s, tCells = %s, bCells = %s, nkCells = %s, notes = %s WHERE clincalFlowID =  %s AND ptID = %s""",
-                    [flowDoc, flowBlast, cd4, cd34, cd64, cd117, hlaDR, lymphoid, tCells, bCells, nkCells, notes, clinicalFlowID, ptid])
-                conn.commit()
-                c.close()
-                conn.close()
-                gc.collect()
-            return redirect(url_for('patient', ptid = ptid, message = "Records updated."))
-        #Check whether a BM sample exists
-        bm_sample, arg = grabdata('bmCollection',"ptID = '{}' AND bmID = '{}'".format(ptid, bmid))
-        if len(bm_sample) == 0: return redirect(url_for('patient', ptid = ptid, error = "Specified BM ID does not exist for this patient. Redirected to view CIRM {}.".format(ptid)))
-        #Clinical Flow entry check
-        if bm_sample[0][11] != None: 
-            clinicalFlow_data, arg = grabdata('clinicalFlow',"ptID = '{}' AND clincalFlowID = '{}'".format(ptid, bm_sample[0][11]))
-        else:
-            clinicalFlow_data = []
-        return render_template("bmsample.html", error = error, message = message, name = session['name'], email = session['email']
-            , ptID = ptid, currdate = currdate(), bm_sample = bm_sample, clinicalFlow_data = clinicalFlow_data)
-    except Exception as e:
-        error = str(e)
-        return render_template("bmsample.html", error = error, message = message, name = session['name'], email = session['email']
-            , ptID = ptid, currdate = currdate(), bm_sample = [], clinicalFlow_data = [])
-
-
-
-
-@app.route('/add-cbc/', methods=['GET','POST'])
+@app.route('/add-clinical-flow/', methods=['GET','POST'])
 def addclinicalflow():
     """
     Add patient to AML database.
@@ -688,7 +560,7 @@ def addclinicalflow():
                 "INSERT INTO clinicalFlow (ptID, doc, blasts, cd4, cd34, cd64, cd117, hlaDR, lymphoid, tCells, bCells, nkCells, notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 [ptid, doc, blast, cd4, cd34, cd64, cd117, hlaDR, lymphoid, tCells, bCells, nkCells, notes])
             conn.commit()
-            clincalFlowID = conn.insert_id()
+            clincalFlowID = cbcID = c.lastrowid
             c.close()
             conn.close()
             gc.collect()
@@ -707,6 +579,190 @@ def addclinicalflow():
         error = str(e)
         return render_template("addclinicalflow.html", error = error, message = message, name = session['name'], email = session['email']
             , ptID = ptid, bmID = bmid, currdate = currdate())
+
+
+@app.route('/add-pb-collection/', methods=['GET','POST'])
+def addpbsample():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    ptid = request.args.get('ptid')
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
+    try:
+        if request.method == "POST":
+            doc = str(request.form['doc'])
+            dop = str(request.form['dop'])
+            vials = int(request.form['vials'])
+            cellNumbers = int(request.form['cellNumbers'])
+            lp = bool(request.form['lp'])
+            stype = int(request.form['stype'])
+            postTransplant = bool(request.form['postTransplant'])
+            blast = request.form['blast']
+            freezedownMedia = str(request.form['freezedownMedia'])
+            location = str(request.form['location'])
+            notes = str(request.form['notes'])
+            c, conn = connection()
+            c.execute(
+                "INSERT INTO pbCollection (ptID, doc, dop, vials, cellNumbers, lp, type, postTransplant, blast, freezedownMedia, location, notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                [ptid, doc, dop, vials, cellNumbers, lp, stype, postTransplant, blast, freezedownMedia, location, notes])
+            conn.commit()
+            c.close()
+            conn.close()
+            gc.collect()
+            return redirect(url_for('patient', ptid = ptid, message = "PB Collection added successfully."))
+        return render_template("addpbsample.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, currdate = currdate())
+    except Exception as e:
+        error = str(e)
+        return render_template("addpbsample.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, currdate = currdate())
+
+
+
+@app.route('/pb-collection/', methods=['GET','POST'])
+def pbsample():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    ptid = request.args.get('ptid')
+    pbid = request.args.get('pbid')
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
+    if pbid == None: return redirect(url_for('patient', ptid = ptid, error = "No PB ID specified. Redirected to view CIRM {}.".format(pbid)))
+    try:
+        if request.method == "POST":
+            #Handle PB sample entry update
+            doc = str(request.form['doc'])
+            dop = str(request.form['dop'])
+            vials = int(request.form['vials'])
+            cellNumbers = int(request.form['cellNumbers'])
+            lp = bool(request.form['lp'])
+            stype = int(request.form['stype'])
+            postTransplant = bool(request.form['postTransplant'])
+            blast = float(request.form['blast'])
+            freezedownMedia = str(request.form['freezedownMedia'])
+            location = str(request.form['location'])
+            notes = str(request.form['notes'])
+            c, conn = connection()
+            c.execute(
+                """UPDATE pbCollection SET doc = %s, dop = %s, vials = %s, cellNumbers = %s, lp = %s, type = %s, postTransplant = %s, blast = %s
+                , freezedownMedia = %s, location = %s, notes = %s WHERE pbID =  %s AND ptID = %s""",
+                [doc, dop, vials, cellNumbers, lp, stype, postTransplant, blast, freezedownMedia, location, notes, pbid, ptid])
+            conn.commit()
+            c.close()
+            conn.close()
+            gc.collect()
+            #Handle Clinical CBC Entry if one exists
+            if 'cbcID' in request.form:
+                cbcID = request.form['cbcID']
+                cbcBlast = request.form['cbcBlast']
+                cbcDoc = request.form['cbcDoc']
+                wbc = request.form['wbc']
+                rbc = request.form['rbc']
+                platlets = request.form['platlets']
+                neutrophils = request.form['neutrophils']
+                lymphocytes = request.form['lymphocytes']
+                eosinophils = request.form['eosinophils']
+                basophils = request.form['basophils']
+                monocytes = request.form['monocytes']
+                cbcNotes = str(request.form['cbcNotes'])
+                c, conn = connection()
+                c.execute(
+                    """UPDATE cbc SET doc = %s, wbc = %s, rbc = %s, blasts = %s, platlets = %s, neutrophils = %s
+                    , lymphocytes = %s, monocytes = %s, eosinophils = %s, basophils = %s, notes = %s WHERE cbcID =  %s AND ptID = %s""",
+                    [cbcDoc, cbcBlast, wbc, rbc, platlets, neutrophils, lymphocytes, eosinophils, basophils, monocytes, cbcNotes, cbcID, ptid])
+                conn.commit()
+                c.close()
+                conn.close()
+                gc.collect()
+            return redirect(url_for('patient', ptid = ptid, message = "Records updated."))
+        #Check whether a PB sample exists
+        pb_sample, arg = grabdata('pbCollection',"ptID = '{}' AND pbID = '{}'".format(ptid, pbid))
+        if len(pb_sample) == 0: return redirect(url_for('patient', ptid = ptid, error = "Specified PB ID does not exist for this patient. Redirected to view CIRM {}.".format(ptid)))
+        #Clinical CBC entry check
+        if pb_sample[0][12] != None: 
+            cbc_data, arg = grabdata('cbc',"ptID = '{}' AND cbcID = '{}'".format(ptid, pb_sample[0][12]))
+        else:
+            cbc_data = []
+        return render_template("pbsample.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, currdate = currdate(), pb_sample = pb_sample, cbc_data = cbc_data)
+    except Exception as e:
+        error = str(e)
+        return render_template("pbsample.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, currdate = currdate(), pb_sample = [], cbc_data = [])
+
+
+
+
+@app.route('/add-cbc/', methods=['GET','POST'])
+def addcbc():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    ptid = request.args.get('ptid')
+    pbid = request.args.get('pbid')
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
+    if pbid == None: return redirect(url_for('patient', ptid = ptid, error = "No PB ID specified. Redirected to view CIRM {}.".format(ptid)))
+    try:
+        if request.method == "POST":
+            doc = str(request.form['doc'])
+            wbc = request.form['wbc']
+            rbc = request.form['rbc']
+            platlets = request.form['platlets']
+            neutrophils = request.form['neutrophils']
+            lymphocytes = request.form['lymphocytes']
+            eosinophils = request.form['eosinophils']
+            basophils = request.form['basophils']
+            cbcBlast = request.form['cbcBlast']
+            monocytes = request.form['monocytes']
+            notes = str(request.form['notes'])
+            c, conn = connection()
+            c.execute(
+                "INSERT INTO cbc (ptID, doc, wbc, rbc, blasts, platlets, neutrophils, lymphocytes, monocytes, eosinophils, basophils, notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                [ptid, doc, wbc, rbc, cbcBlast, platlets, neutrophils, lymphocytes, eosinophils, basophils, monocytes, notes])
+            conn.commit()
+            cbcID = c.lastrowid
+            c.close()
+            conn.close()
+            gc.collect()
+            #update  cbc field of PB collection
+            c, conn = connection()
+            c.execute(
+                """UPDATE pbCollection SET cbcID = %s WHERE pbID =  %s AND ptID = %s""", [cbcID,pbid, ptid])
+            conn.commit()
+            c.close()
+            conn.close()
+            gc.collect()
+            return redirect(url_for('pbsample', ptid = ptid, pbid = pbid, message = "CBC added successfully."))
+        return render_template("addcbc.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, pbID = pbid, currdate = currdate())
+    except Exception as e:
+        error = str(e)
+        return render_template("addcbc.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, pbID = pbid, currdate = currdate())
 
 
 

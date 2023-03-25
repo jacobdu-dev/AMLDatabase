@@ -269,6 +269,20 @@ def viewpatients():
     error = request.args.get('error')
     message = request.args.get('message')
     query = request.args.get('query')
+    query = """
+    SELECT patient.ptID, patient.diagnosisDate, patient.amlType, patient.mll, patient.flt3Itd, patient.flt3Kinase,
+    patient.bcrAbl, patient.notes, mut.mutgenes, bmd.count
+    FROM patient 
+    LEFT JOIN (
+        SELECT ptID, GROUP_CONCAT(gene) AS mutgenes FROM ngsMutations GROUP BY ptID
+        ) mut 
+    ON patient.ptID = mut.ptID 
+    LEFT JOIN (
+        SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 0 GROUP BY ptID
+        ) bmd
+    ON patient.ptID = bmd.ptID;
+    """
+
     if query != None:
         #implement when search page is implemented.
         pass

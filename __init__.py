@@ -184,6 +184,74 @@ def adduser():
         return render_template("addusers.html", error=error, message=message, name = session['name'], email = session['email'])
 
 
+
+
+@app.route('/edit-user/', methods=['GET','POST'])
+def edituser():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    uid = request.args.get('uid')
+    if uid == None: uid = session['uid']
+    try:
+        if request.method == "POST":
+            #Handle BM sample entry update
+            name = str(request.form['name'])
+            email = str(request.form['email'])
+            active = int(request.form['active'])
+            c, conn = connection()
+            c.execute(
+                """UPDATE users SET name = %s, email = %s, active = %s WHERE uid =  %s""",
+                [name, email, active, uid])
+            conn.commit()
+            c.close()
+            conn.close()
+            gc.collect()
+            message = "Account updated successfully."
+            if request.form['password'] != '':
+                #Verify first and second password match
+                if request.form['password'] != request.form['passwordver']: 
+                    message = "Verify password entered does not match the first password. Password failed to update."
+                else:
+                    #Perform user password verification check
+                    c, conn = connection()
+                    tempdata = c.execute("SELECT * FROM users WHERE uid = (%s)", [session['uid']])
+                    fetchpass = c.fetchone()[4]
+                    conn.commit()
+                    c.close()
+                    conn.close()
+                    gc.collect()
+                    if sha256_crypt.verify(request.form['currpassword'], fetchpass) is True:
+                        c, conn = connection()
+                        c.execute(
+                            """UPDATE users SET password = %s WHERE uid =  %s""",
+                            [thwart(sha256_crypt.encrypt(str(request.form['password']))), uid])
+                        conn.commit()
+                        c.close()
+                        conn.close()
+                        gc.collect()
+                        message = "Password and account updated successfully."
+        #Check user exists
+        user_data, arg = customquery("SELECT uid, name, email, active FROM users WHERE uid = {}".format(uid))
+        if len(user_data) == 0: return redirect(url_for('viewusers',error = "Specified user ID does not exist. Redirected to view all users."))
+        return render_template("edituser.html", error = error, message = message, name = session['name'], email = session['email']
+            , user_data = user_data)
+    except Exception as e:
+        error = str(e)
+        return render_template("edituser.html", error = error, message = message, name = session['name'], email = session['email']
+            , user_data = [])
+
+
+
+
 @app.route('/view-users/')
 def viewusers():
     """
@@ -235,7 +303,7 @@ def addpatient():
     message = request.args.get('message')
     try:
         if request.method == "POST":
-            ptid = int(request.form['ptid'])
+            ptid = request.form['ptid']
             diagnosisDate = str(request.form['diagnosisdate'])
             amlType = str(request.form['amltype'])
             mll = convertbool(str(request.form['mllmut']))
@@ -271,7 +339,8 @@ def viewpatients():
     query = request.args.get('query')
     query = """
     SELECT patient.ptID, patient.diagnosisDate, patient.amlType, patient.mll, patient.flt3Itd, patient.flt3Kinase,
-    patient.bcrAbl, patient.notes, mut.mutgenes, bmd.count
+    patient.bcrAbl, patient.notes, mut.mutgenes, bmd.count AS bmd_count, bmrm.count AS bmrm_count, bmrl.count AS bmrl_count
+    , pbd.count AS pbd_count, pbrm.count AS pbrm_count, pbrl.count AS pbrl_count
     FROM patient 
     LEFT JOIN (
         SELECT ptID, GROUP_CONCAT(gene) AS mutgenes FROM ngsMutations GROUP BY ptID
@@ -280,12 +349,31 @@ def viewpatients():
     LEFT JOIN (
         SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 0 GROUP BY ptID
         ) bmd
-    ON patient.ptID = bmd.ptID;
+    ON patient.ptID = bmd.ptID 
+    LEFT JOIN (
+        SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 1 GROUP BY ptID
+        ) bmrm
+    ON patient.ptID = bmrm.ptID
+    LEFT JOIN (
+        SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 2 GROUP BY ptID
+        ) bmrl
+    ON patient.ptID = bmrl.ptID
+    LEFT JOIN (
+        SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 0 GROUP BY ptID
+        ) pbd
+    ON patient.ptID = pbd.ptID 
+    LEFT JOIN (
+        SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 1 GROUP BY ptID
+        ) pbrm
+    ON patient.ptID = pbrm.ptID
+    LEFT JOIN (
+        SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 2 GROUP BY ptID
+        ) pbrl
+    ON patient.ptID = pbrl.ptID;
     """
 
     if query != None:
-        #implement when search page is implemented.
-        pass
+        returned_data, sqlarg  = customquery(query)
     else:
         returned_data, sqlarg  = grabdata('patient')
     return render_template("viewpatients.html", error = error, message = message, name = session['name'], email = session['email'], 
@@ -435,7 +523,7 @@ def addbmsample():
             vials = int(request.form['vials'])
             cellNumbers = int(request.form['cellNumbers'])
             stype = int(request.form['stype'])
-            postTransplant = bool(request.form['postTransplant'])
+            postTransplant = int(request.form['postTransplant'])
             blast = float(request.form['blast'])
             freezedownMedia = str(request.form['freezedownMedia'])
             location = str(request.form['location'])
@@ -483,7 +571,7 @@ def bmsample():
             vials = int(request.form['vials'])
             cellNumbers = int(request.form['cellNumbers'])
             stype = int(request.form['stype'])
-            postTransplant = bool(request.form['postTransplant'])
+            postTransplant = int(request.form['postTransplant'])
             blast = float(request.form['blast'])
             freezedownMedia = str(request.form['freezedownMedia'])
             location = str(request.form['location'])
@@ -616,9 +704,9 @@ def addpbsample():
             dop = str(request.form['dop'])
             vials = int(request.form['vials'])
             cellNumbers = int(request.form['cellNumbers'])
-            lp = bool(request.form['lp'])
+            lp = int(request.form['lp'])
             stype = int(request.form['stype'])
-            postTransplant = bool(request.form['postTransplant'])
+            postTransplant = int(request.form['postTransplant'])
             blast = request.form['blast']
             freezedownMedia = str(request.form['freezedownMedia'])
             location = str(request.form['location'])
@@ -665,9 +753,9 @@ def pbsample():
             dop = str(request.form['dop'])
             vials = int(request.form['vials'])
             cellNumbers = int(request.form['cellNumbers'])
-            lp = bool(request.form['lp'])
+            lp = int(request.form['lp'])
             stype = int(request.form['stype'])
-            postTransplant = bool(request.form['postTransplant'])
+            postTransplant = int(request.form['postTransplant'])
             blast = float(request.form['blast'])
             freezedownMedia = str(request.form['freezedownMedia'])
             location = str(request.form['location'])

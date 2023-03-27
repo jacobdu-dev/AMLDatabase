@@ -28,24 +28,32 @@
                             <th>CIRM #</th>
                             <th>Diagnosis Date</th>
                             <th>AML Subtype</th>
-                            <th>MLL Rearrangement</th>
-                            <th>FLT3 ITD</th>
-                            <th>FLT3 Kinase Mut.</th>
-                            <th>BCR-ABL Fusion</th>
+                            <th>Targetable Mutations</th>
+                            <th>NGS/Myeloid Panel Mutations</th>
+                            <th>BM-D#</th>
+                            <th>BM-RM#</th>
+                            <th>BM-RL#</th>
+                            <th>PB-D#</th>
+                            <th>PB-RM#</th>
+                            <th>PB-RL#</th>
                             <th>Notes</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                    	{% for ptid, diagnosisdate, amltype, mll, flt3itd, flt3k, bcrabl, notes in patients %}
+                    	{% for ptid, diagnosisdate, amltype, mll, flt3itd, flt3k, bcrabl, notes, mutgenes, bmd, bmrm, bmrl, pbd, pbrm, pbrl in patients %}
                         <tr>
                         	<td><a href="/patient/?ptid={{ptid}}">{{ptid}}</a></td>
 							<td>{{diagnosisdate}}</td>
 							<td>{{amltype}}</td>
-							<td>{{booldict[mll]}}</td>
-							<td>{{booldict[flt3itd]}}</td>
-							<td>{{booldict[flt3k]}}</td>
-							<td>{{booldict[bcrabl]}}</td>
+							<td>{% if mll %}MLL Rearr.{% endif %}{% if flt3itd %}, FLT3 ITD.{% endif %}{% if flt3k %}, FLT3 Kin.{% endif %}{% if bcrabl %}, BCR-ABL Fusi.{% endif %}</td>
+                            <td>{{mutgenes}}</td>
+                            <td>{{bmd}}</td>
+                            <td>{{bmrm}}</td>
+                            <td>{{bmrl}}</td>
+                            <td>{{pbd}}</td>
+                            <td>{{pbrm}}</td>
+                            <td>{{pbrl}}</td>
 							<td>{{notes}}</td>
                             <td>
                                 <a href="/patient/?ptid={{ptid}}">
@@ -60,11 +68,16 @@
                             <th>CIRM #</th>
                             <th>Diagnosis Date</th>
                             <th>AML Subtype</th>
-                            <th>MLL Rearrangement</th>
-                            <th>FLT3 ITD</th>
-                            <th>FLT3 Kinase Mut.</th>
-                            <th>BCR-ABL Fusion</th>
+                            <th>Targetable Mutations</th>
+                            <th>NGS/Myeloid Panel Mutations</th>
+                            <th>BM-D#</th>
+                            <th>BM-RM#</th>
+                            <th>BM-RL#</th>
+                            <th>PB-D#</th>
+                            <th>PB-RM#</th>
+                            <th>PB-RL#</th>
                             <th>Notes</th>
+                            <th>Action</th>
                         </tr>
                     </tfoot>
                 </table>

@@ -84,7 +84,7 @@ $(document).ready(function() {
                 }
             },
             {
-                text: 'MLL Rearrangement Mut.',
+                text: 'Targetable Mutations',
                 className: 'btn btn-primary toggle-vis mb-1',
                 action: function(e, dt, node, config ) {
                     var column = dt.column( 3 );
@@ -92,7 +92,7 @@ $(document).ready(function() {
                 }
             },
             {
-                text: 'FLT3 ITD Mut.',
+                text: 'NSG/Myeloid Mutations Panel',
                 className: 'btn btn-primary toggle-vis mb-1',
                 action: function(e, dt, node, config ) {
                     var column = dt.column( 4 );
@@ -100,7 +100,7 @@ $(document).ready(function() {
                 }
             },
             {
-                text: 'FLT3 Kinase Mut.',
+                text: 'Diagnosis BM Inventory',
                 className: 'btn btn-primary toggle-vis mb-1',
                 action: function(e, dt, node, config ) {
                     var column = dt.column( 5 );
@@ -108,7 +108,7 @@ $(document).ready(function() {
                 }
             },
             {
-                text: 'BCR-ABL Fusion Mut.',
+                text: 'Remission BM Inventory',
                 className: 'btn btn-primary toggle-vis mb-1',
                 action: function(e, dt, node, config ) {
                     var column = dt.column( 6 );
@@ -116,10 +116,42 @@ $(document).ready(function() {
                 }
             },
             {
-                text: 'Patient Notes',
+                text: 'Relapse BM Inventory',
                 className: 'btn btn-primary toggle-vis mb-1',
                 action: function(e, dt, node, config ) {
                     var column = dt.column( 7 );
+                    column.visible( ! column.visible() );
+                }
+            },
+            {
+                text: 'Diagnoisis PB Inventory',
+                className: 'btn btn-primary toggle-vis mb-1',
+                action: function(e, dt, node, config ) {
+                    var column = dt.column( 8 );
+                    column.visible( ! column.visible() );
+                }
+            },
+            {
+                text: 'Remission PB Inventory',
+                className: 'btn btn-primary toggle-vis mb-1',
+                action: function(e, dt, node, config ) {
+                    var column = dt.column( 9 );
+                    column.visible( ! column.visible() );
+                }
+            },
+            {
+                text: 'Relapse PB Inventory',
+                className: 'btn btn-primary toggle-vis mb-1',
+                action: function(e, dt, node, config ) {
+                    var column = dt.column( 10 );
+                    column.visible( ! column.visible() );
+                }
+            },
+            {
+                text: 'Patient Notes',
+                className: 'btn btn-primary toggle-vis mb-1',
+                action: function(e, dt, node, config ) {
+                    var column = dt.column( 11 );
                     column.visible( ! column.visible() );
                 }
             },

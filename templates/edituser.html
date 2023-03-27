@@ -1,0 +1,52 @@
+{% extends "header.html" %}
+
+{% block body %}
+
+<div class="card">
+	<div class="card-body">
+		{% for uID, uname, uemail, active in user_data %}
+		<h3>Edit Account: User ID {{uID}}</h3>
+		<form method="post">
+			<div class="form-group">
+				<label for="inputName">Name</label>
+				<input type="text" id="inputName" class="form-control" maxlength="255" name="name" value="{{uname}}" required>
+			</div>
+			<div class="form-group">
+				<label for="inputEmail">Email</label>
+				<input type="text" id="inputEmail" class="form-control" maxlength="255" name="email" value="{{uemail}}" required>
+			</div>
+			<div class="form-group">
+				<label for="inputActive">Active Account</label>
+				<select id="inputActive" class="form-control" name="active" autocomplete="off" >
+					{% if active == 1 %}
+					<option value = 1 selected>True</option>
+					{% else %}
+					<option value = 1>True</option>
+					{% endif %}
+					{% if active == 0 %}
+					<option value = 0 selected>False</option>
+					{% else %}
+					<option value = 0>False</option>
+					{% endif %}
+				</select>
+			</div>
+			<button class="btn btn-primary" type="submit" value="submit">Update Account</button>
+			<div class="form-group">
+				<label for="inputPassword">Update Password</label>
+				<input type="password" id="inputPassword" class="form-control" maxlength="255" name="password" value="" >
+			</div>
+			<div class="form-group">
+				<label for="inputPasswordVer">Verify New Password</label>
+				<input type="password" id="inputPasswordVer" class="form-control" maxlength="255" name="passwordver" value="" >
+			</div>
+			<div class="form-group">
+				<label for="inputCurrPassword">Your Password</label>
+				<input type="password" id="inputCurrPassword" class="form-control" maxlength="255" name="currpassword" value="" >
+			</div>
+			<button class="btn btn-primary" type="submit" value="submit">Update Password and Account</button>
+		</form>
+		{% endfor %}
+	</div>
+</div>
+
+{% endblock %}

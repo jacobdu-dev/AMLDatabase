@@ -4,6 +4,7 @@ from Settings.settings import *
 from datetime import datetime
 from passlib.hash import sha256_crypt
 from pymysql.converters import escape_string as thwart
+from flask_sslify import SSLify
 from io import BytesIO
 import pytz
 import gc
@@ -81,6 +82,8 @@ def customquery(query):
 app = Flask(__name__)
 app.config.update(SECRET_KEY=SESSION_KEY)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000 #Max file transfer size is 16MB
+sslify = SSLify(app)
+addusermode = False
 
 booldict = {0: "False", 1: "True", None: "N/A"}
 
@@ -150,8 +153,9 @@ def logout():
 
 @app.route('/add-user/', methods=['GET','POST'])
 def adduser():
-    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
-    if not session['active']: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    if not addusermode:
+        if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+        if not session['active']: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
     error = request.args.get('error')
     message = request.args.get('message')
     try:
@@ -160,6 +164,7 @@ def adduser():
             if str(request.form['password']) != str(request.form['passwordver']): 
                 #Entered passwords must match
                 error = "Dicrepency between entered 'password' and 'verify password'."
+                if addusermode: return render_template("addusers.html", error=error, message=message)
                 return render_template("addusers.html", error=error, message=message, name = session['name'], email = session['email'])
             password = sha256_crypt.encrypt(str(request.form['password']))
             name = str(request.form['name'])
@@ -168,6 +173,7 @@ def adduser():
             x = c.execute("SELECT * FROM users WHERE email = (%s)", [thwart(email)])
             if int(x) > 0:
                 error = "Email already exists in the system."
+                if addusermode: return render_template("addusers.html", error=error, message=message)
                 return render_template("addusers.html", error=error, message=message, name = session['name'], email = session['email'])
             else:
                 c.execute(
@@ -178,9 +184,11 @@ def adduser():
                 c.close()
                 conn.close()
                 gc.collect()
+        if addusermode: return render_template("addusers.html", error=error, message=message)
         return render_template("addusers.html", error=error, message=message, name = session['name'], email = session['email'])
     except Exception as e:
         error = str(e)
+        if addusermode: return render_template("addusers.html", error=error, message=message)
         return render_template("addusers.html", error=error, message=message, name = session['name'], email = session['email'])
 
 
@@ -312,9 +320,14 @@ def addpatient():
             bcrAbl = convertbool(str(request.form['bcrablmut']))
             ptnotes = str(request.form['notes'])
             c, conn = connection()
-            c.execute(
-                "INSERT INTO patient (ptID, diagnosisDate, amlType, mll, flt3Itd, flt3Kinase, bcrAbl, notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                [ptid, diagnosisDate, amlType, mll, flt3Itd, flt3Kinase, bcrAbl, ptnotes])
+            if request.form['ptid'] == '':
+                c.execute(
+                    "INSERT INTO patient (diagnosisDate, amlType, mll, flt3Itd, flt3Kinase, bcrAbl, notes) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                    [diagnosisDate, amlType, mll, flt3Itd, flt3Kinase, bcrAbl, ptnotes])
+            else:
+                c.execute(
+                    "INSERT INTO patient (ptID, diagnosisDate, amlType, mll, flt3Itd, flt3Kinase, bcrAbl, notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                    [ptid, diagnosisDate, amlType, mll, flt3Itd, flt3Kinase, bcrAbl, ptnotes])
             conn.commit()
             c.close()
             conn.close()

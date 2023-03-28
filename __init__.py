@@ -1,6 +1,6 @@
 from flask import Flask, render_template, flash, request, url_for, redirect, session, jsonify, send_file, make_response
 import sys
-from FlaskApp.settings import *
+from Settings.settings import *
 from datetime import datetime
 from passlib.hash import sha256_crypt
 from pymysql.converters import escape_string as thwart

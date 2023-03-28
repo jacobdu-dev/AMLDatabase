@@ -436,6 +436,53 @@ def patient():
 
 
 
+
+@app.route('/edit-patient/', methods=['GET','POST'])
+def editpatient():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    ptid = request.args.get('ptid')
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
+    try:
+        if request.method == "POST":
+            diagnosisDate = str(request.form['diagnosisdate'])
+            amlType = str(request.form['amltype'])
+            mll = convertbool(str(request.form['mllmut']))
+            flt3Itd = convertbool(str(request.form['flt3idtmut']))
+            flt3Kinase = convertbool(str(request.form['flt3kinasemut']))
+            bcrAbl = convertbool(str(request.form['bcrablmut']))
+            ptnotes = str(request.form['notes'])
+            c, conn = connection()
+            c.execute(
+                """UPDATE patient SET diagnosisDate = %s, amlType = %s, mll = %s, flt3Itd = %s, flt3Kinase = %s, bcrAbl = %s, 
+                notes = %s WHERE ptID = %s""",
+                [diagnosisDate, amlType, mll, flt3Itd, flt3Kinase, bcrAbl, ptnotes, ptid])
+            conn.commit()
+            c.close()
+            conn.close()
+            gc.collect()
+            return redirect(url_for('patient', ptid = ptid, message = "Records updated."))
+        #Check whether a BM sample exists
+        pt_data, arg = grabdata('patient',"ptID = '{}'".format(ptid))
+        if len(pt_data) == 0: return redirect(url_for('viewpatients', error = "Specified pt ID does not exist."))
+        return render_template("editpatient.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, pt_data = pt_data)
+    except Exception as e:
+        error = str(e)
+        return render_template("editpatient.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, pt_data = [])
+
+
+
 @app.route('/add-mutation/', methods=['GET','POST'])
 def addmutation():
     """

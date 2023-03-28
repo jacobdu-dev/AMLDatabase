@@ -47,14 +47,22 @@
 							<td>{{diagnosisdate}}</td>
 							<td>{{amltype}}</td>
 							<td>{% if mll %}MLL Rearr.{% endif %}{% if flt3itd %}, FLT3 ITD.{% endif %}{% if flt3k %}, FLT3 Kin.{% endif %}{% if bcrabl %}, BCR-ABL Fusi.{% endif %}</td>
+                            {% if mutgenes != None %} 
+                            <td>{{ ','.join(mutgenes.split(',') | unique) }}</td>
+                            {% else %}
                             <td>{{mutgenes}}</td>
+                            {% endif %}
                             <td>{{bmd}}</td>
                             <td>{{bmrm}}</td>
                             <td>{{bmrl}}</td>
                             <td>{{pbd}}</td>
                             <td>{{pbrm}}</td>
                             <td>{{pbrl}}</td>
-							<td>{{notes}}</td>
+                            {% if notes | length > 20 %}
+							<td>{{notes[:20]}}..</td>
+                            {% else %}
+                            <td>{{notes}}</td>
+                            {% endif %}
                             <td>
                                 <a href="/patient/?ptid={{ptid}}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>

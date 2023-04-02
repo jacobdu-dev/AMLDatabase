@@ -1,0 +1,76 @@
+{% extends "header.html" %}
+
+{% block body %}
+<div class="card">
+    <div class="card-body">
+        <h3>Search</h3>
+
+        <form method="post">
+            <h5>Mutations</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="comutations" id="selectCoMut">
+                <label class="form-check-label" for="selectCoMut">AND Search (example: Patients with NRAS, KRAS, AND FLT3 mutations)</label>
+            </div>
+            <div class="form-group mb-4">
+                <label for="selectMutations">Select NGS/Myeloid Panel Mutations</label>
+                <select multiple class="form-control" id="selectMutations" name="mutations" size="10">
+                    {% for gene in mutgenes %}
+                    <option value="{{gene}}">{{gene}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <h5>Treatments</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="cotreatments" id="selectCoTreat">
+                <label class="form-check-label" for="selectCoTreat">AND Search</label>
+            </div>
+            <div class="form-group mb-4">
+                <label for="selectTreatments">Select Treatments</label>
+                <select multiple class="form-control" id="selectTreatments" name="treatments">
+                    {% for drug in treatments %}
+                    <option value="{{gene}}">{{drug}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <h5>Bone Marrow Vials (minimum) </h5>
+
+            <div class="row mb-4">
+                <div class="col">
+                    <p>BM-D</p>
+                    <input type="text" class="form-control" name="bmd" value=0>
+                </div>
+                <div class="col">
+                    <p>BM-RM</p>
+                    <input type="text" class="form-control" name="bmrm" value=0>
+                </div>
+                <div class="col">
+                    <p>BM-RL</p>
+                    <input type="number" class="form-control" name="bmrl" value=0>
+                </div>
+            </div>
+
+            <h5>Peripheral Blood Vials (minimum) </h5>
+
+            <div class="row mb-4">
+                <div class="col">
+                    <p>PB-D</p>
+                    <input type="text" class="form-control" name="pbd" value=0>
+                </div>
+                <div class="col">
+                    <p>PB-RM</p>
+                    <input type="text" class="form-control" name="pbrm" value=0>
+                </div>
+                <div class="col">
+                    <p>PB-RL</p>
+                    <input type="number" class="form-control" name="pbrl" value=0>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" type="submit" value="submit">Search</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -125,7 +125,7 @@ def login():
                     c.close()
                     conn.close()
                     gc.collect()
-                    return redirect(url_for('homepage'))
+                    return redirect(url_for('search'))
                 else:
                     c.close()
                     conn.close()
@@ -286,15 +286,126 @@ def viewusers():
 
 
 
-@app.route('/')
-def homepage():
+@app.route('/', methods=['GET','POST'])
+def search():
     """
     Default page. Unfinished
     """
     if 'active' not in session: return redirect(url_for('login', error = str('Restricted area! Please log in!')))
     error = request.args.get('error')
     message = request.args.get('message')
-    return render_template("home.html", error = error, message = message, name = session['name'], email = session['email'])
+    try:
+        if request.method == "POST":
+            #mutations
+            # check selected mutations is greater than 0
+            if 'mutations' in request.form.keys():
+                if len(request.form.getlist('mutations')) > 0:
+                    if len(request.form.getlist('mutations')) == 1:
+                        #if there is only one gene constraaint
+                        mutquery = "SELECT GROUP_CONCAT(DISTINCT ptID) FROM ngsMutations WHERE gene = '{}'".format(request.form.getlist('mutations')[0])
+                    elif 'comutations' in request.form:
+                        #if there are more than 1 mutations selected and co-mutations is selected
+                        mutquery = "SELECT GROUP_CONCAT(DISTINCT patient.ptID) FROM patient " 
+                        for gene in request.form.getlist('mutations'):
+                            mutquery += "INNER JOIN (SELECT ptID FROM ngsMutations WHERE gene = '{}') {} ON patient.ptID = {}.ptID ".format(gene, gene, gene)
+                    else:
+                        #get ptIDs with at least one of the selected mutations
+                        mutquery = "SELECT GROUP_CONCAT(DISTINCT ptID) FROM ngsMutations WHERE gene in ('{}')".format("','".join(request.form.getlist('mutations')))
+                else:
+                    mutquery = "SELECT GROUP_CONCAT(ptID) FROM patient"         
+            else:
+                mutquery = "SELECT GROUP_CONCAT(ptID) FROM patient"
+            mut_ptIDs, sqlarg = customquery(mutquery)
+            mut_ptIDs = set(mut_ptIDs[0][0].split(','))
+            # check selected treatments is greater than 0
+            if 'treatments' in request.form.keys():
+                if len(request.form.getlist('treatments')) > 0:
+
+                    if len(request.form.getlist('treatments')) == 1:
+                        #if there is only one gene constraaint
+                        treatquery = "SELECT GROUP_CONCAT(DISTINCT ptID) FROM treatments WHERE drug = '{}'".format(request.form.getlist('treatments')[0])
+                    elif 'cotreatments' in request.form:
+                        #if there are more than 1 treatments selected and co-treatments is selected
+                        treatquery = "SELECT GROUP_CONCAT(DISTINCT patient.ptID) FROM patient " 
+                        for drug in request.form.getlist('treatments'):
+                            treatquery += "INNER JOIN (SELECT ptID FROM treatments WHERE drug = '{}') {} ON patient.ptID = {}.ptID ".format(drug, drug, drug)
+                    else:
+                        #get ptIDs with at least one of the selected treatments
+                        treatquery = "SELECT GROUP_CONCAT(DISTINCT ptID) FROM treatments WHERE drug in ('{}')".format("','".join(request.form.getlist('treatments')))
+                else:
+                    treatquery = "SELECT GROUP_CONCAT(ptID) FROM patient"
+            else:
+                treatquery = "SELECT GROUP_CONCAT(ptID) FROM patient"
+            treat_ptIDs, sqlarg = customquery(treatquery)
+            treat_ptIDs = set(treat_ptIDs[0][0].split(','))
+            treat_mut_ptIDs = treat_ptIDs & mut_ptIDs
+            #grab sample constraints
+            bmd_count, bmrm_count, bmrl_count, pbd_count, pbrm_count, pbrl_count = request.form['bmd'], request.form['bmrm'], request.form['bmrl'], request.form['pbd'], request.form['pbrm'], request.form['pbrl']
+            #query building
+            query = """
+            SELECT patient.ptID, patient.diagnosisDate, patient.amlType, patient.mll, patient.flt3Itd, patient.flt3Kinase,
+            patient.bcrAbl, patient.notes, mut.mutgenes, bmd.count AS bmd_count, bmrm.count AS bmrm_count, bmrl.count AS bmrl_count
+            , pbd.count AS pbd_count, pbrm.count AS pbrm_count, pbrl.count AS pbrl_count
+            FROM patient 
+            LEFT JOIN (
+                SELECT ptID, GROUP_CONCAT(gene) AS mutgenes FROM ngsMutations GROUP BY ptID
+                ) mut 
+            ON patient.ptID = mut.ptID 
+            LEFT JOIN (
+                SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 0 GROUP BY ptID
+                ) bmd
+            ON patient.ptID = bmd.ptID 
+            LEFT JOIN (
+                SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 1 GROUP BY ptID
+                ) bmrm
+            ON patient.ptID = bmrm.ptID
+            LEFT JOIN (
+                SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 2 GROUP BY ptID
+                ) bmrl
+            ON patient.ptID = bmrl.ptID
+            LEFT JOIN (
+                SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 0 GROUP BY ptID
+                ) pbd
+            ON patient.ptID = pbd.ptID 
+            LEFT JOIN (
+                SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 1 GROUP BY ptID
+                ) pbrm
+            ON patient.ptID = pbrm.ptID
+            LEFT JOIN (
+                SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 2 GROUP BY ptID
+                ) pbrl
+            ON patient.ptID = pbrl.ptID
+            WHERE patient.ptID IN ({})
+            """.format(','.join(list(treat_mut_ptIDs)))
+            if int(bmd_count) > 0:
+                query += " AND bmd.count > {}".format(bmd_count)
+            if int(bmrm_count) > 0:
+                query += " AND bmrm.count > {}".format(bmrm_count)
+            if int(bmrl_count) > 0:
+                query += " AND bmrl.count > {}".format(bmrl_count)
+            if int(pbd_count) > 0:
+                query += " AND pbd.count > {}".format(pbd_count)
+            if int(pbrm_count) > 0:
+                query += " AND pbrm.count > {}".format(pbrm_count)
+            if int(pbrl_count) > 0:
+                query += " AND pbrl.count > {}".format(pbrl_count)
+            query += ';'
+            return redirect(url_for('viewpatients', query = query))
+        mutgenes, sqlarg = customquery("""SELECT GROUP_CONCAT(gene) FROM ngsMutations""")
+        if mutgenes[0][0] != None:
+            mutgenes = list(set(mutgenes[0][0].split(',')))
+        else:
+            mutgenes = []
+        treatments, sqlarg = customquery("""SELECT GROUP_CONCAT(drug) FROM treatments""")
+        if treatments[0][0] != None:
+            treatments = list(set(treatments[0][0].split(',')))
+        else:
+            treatments = []
+
+        return render_template("search.html", error = error, message = message, name = session['name'], email = session['email'], mutgenes = mutgenes, treatments = treatments)
+    except Exception as e:
+        error = str(e)
+        return render_template("search.html", error = error, message = message, name = session['name'], email = session['email'], mutgenes = [], treatments = [])
 
 @app.route('/add-patient/', methods=['GET','POST'])
 def addpatient():
@@ -350,45 +461,42 @@ def viewpatients():
     error = request.args.get('error')
     message = request.args.get('message')
     query = request.args.get('query')
-    query = """
-    SELECT patient.ptID, patient.diagnosisDate, patient.amlType, patient.mll, patient.flt3Itd, patient.flt3Kinase,
-    patient.bcrAbl, patient.notes, mut.mutgenes, bmd.count AS bmd_count, bmrm.count AS bmrm_count, bmrl.count AS bmrl_count
-    , pbd.count AS pbd_count, pbrm.count AS pbrm_count, pbrl.count AS pbrl_count
-    FROM patient 
-    LEFT JOIN (
-        SELECT ptID, GROUP_CONCAT(gene) AS mutgenes FROM ngsMutations GROUP BY ptID
-        ) mut 
-    ON patient.ptID = mut.ptID 
-    LEFT JOIN (
-        SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 0 GROUP BY ptID
-        ) bmd
-    ON patient.ptID = bmd.ptID 
-    LEFT JOIN (
-        SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 1 GROUP BY ptID
-        ) bmrm
-    ON patient.ptID = bmrm.ptID
-    LEFT JOIN (
-        SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 2 GROUP BY ptID
-        ) bmrl
-    ON patient.ptID = bmrl.ptID
-    LEFT JOIN (
-        SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 0 GROUP BY ptID
-        ) pbd
-    ON patient.ptID = pbd.ptID 
-    LEFT JOIN (
-        SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 1 GROUP BY ptID
-        ) pbrm
-    ON patient.ptID = pbrm.ptID
-    LEFT JOIN (
-        SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 2 GROUP BY ptID
-        ) pbrl
-    ON patient.ptID = pbrl.ptID;
-    """
-
-    if query != None:
-        returned_data, sqlarg  = customquery(query)
-    else:
-        returned_data, sqlarg  = grabdata('patient')
+    if query == None or query == '':
+        query = """
+        SELECT patient.ptID, patient.diagnosisDate, patient.amlType, patient.mll, patient.flt3Itd, patient.flt3Kinase,
+        patient.bcrAbl, patient.notes, mut.mutgenes, bmd.count AS bmd_count, bmrm.count AS bmrm_count, bmrl.count AS bmrl_count
+        , pbd.count AS pbd_count, pbrm.count AS pbrm_count, pbrl.count AS pbrl_count
+        FROM patient 
+        LEFT JOIN (
+            SELECT ptID, GROUP_CONCAT(gene) AS mutgenes FROM ngsMutations GROUP BY ptID
+            ) mut 
+        ON patient.ptID = mut.ptID 
+        LEFT JOIN (
+            SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 0 GROUP BY ptID
+            ) bmd
+        ON patient.ptID = bmd.ptID 
+        LEFT JOIN (
+            SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 1 GROUP BY ptID
+            ) bmrm
+        ON patient.ptID = bmrm.ptID
+        LEFT JOIN (
+            SELECT ptID, SUM(vials) AS count FROM bmCollection WHERE type = 2 GROUP BY ptID
+            ) bmrl
+        ON patient.ptID = bmrl.ptID
+        LEFT JOIN (
+            SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 0 GROUP BY ptID
+            ) pbd
+        ON patient.ptID = pbd.ptID 
+        LEFT JOIN (
+            SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 1 GROUP BY ptID
+            ) pbrm
+        ON patient.ptID = pbrm.ptID
+        LEFT JOIN (
+            SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 2 GROUP BY ptID
+            ) pbrl
+        ON patient.ptID = pbrl.ptID;
+        """
+    returned_data, sqlarg  = customquery(query)
     return render_template("viewpatients.html", error = error, message = message, name = session['name'], email = session['email'], 
         patients = returned_data, booldict = booldict, sqlquery = sqlarg)
 

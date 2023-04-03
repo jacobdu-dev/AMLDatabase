@@ -316,7 +316,10 @@ def search():
             else:
                 mutquery = "SELECT GROUP_CONCAT(ptID) FROM patient"
             mut_ptIDs, sqlarg = customquery(mutquery)
-            mut_ptIDs = set(mut_ptIDs[0][0].split(','))
+            if mut_ptIDs[0][0] != None:
+                mut_ptIDs = set(mut_ptIDs[0][0].split(','))
+            else:
+                mut_ptIDs = set()
             # check selected treatments is greater than 0
             if 'treatments' in request.form.keys():
                 if len(request.form.getlist('treatments')) > 0:
@@ -337,7 +340,10 @@ def search():
             else:
                 treatquery = "SELECT GROUP_CONCAT(ptID) FROM patient"
             treat_ptIDs, sqlarg = customquery(treatquery)
-            treat_ptIDs = set(treat_ptIDs[0][0].split(','))
+            if treat_ptIDs[0][0] != None:
+                treat_ptIDs = set(treat_ptIDs[0][0].split(','))
+            else:
+                treat_ptIDs = set()
             treat_mut_ptIDs = treat_ptIDs & mut_ptIDs
             #grab sample constraints
             bmd_count, bmrm_count, bmrl_count, pbd_count, pbrm_count, pbrl_count = request.form['bmd'], request.form['bmrm'], request.form['bmrl'], request.form['pbd'], request.form['pbrm'], request.form['pbrl']
@@ -375,20 +381,32 @@ def search():
                 SELECT ptID, SUM(vials) AS count FROM pbCollection WHERE type = 2 GROUP BY ptID
                 ) pbrl
             ON patient.ptID = pbrl.ptID
-            WHERE patient.ptID IN ({})
-            """.format(','.join(list(treat_mut_ptIDs)))
+            """
+            constraints = []
+            if len(treat_mut_ptIDs) > 0:
+                constraints.append("patient.ptID IN ({})".format(','.join(list(treat_mut_ptIDs))))
+            else:
+                #no patient matches constraint requirements
+                constraints.append("patient.ptID = NULL")
             if int(bmd_count) > 0:
-                query += " AND bmd.count > {}".format(bmd_count)
+                constraints.append("bmd.count > {}".format(bmd_count))
             if int(bmrm_count) > 0:
-                query += " AND bmrm.count > {}".format(bmrm_count)
+                constraints.append("bmrm.count > {}".format(bmrm_count))
             if int(bmrl_count) > 0:
-                query += " AND bmrl.count > {}".format(bmrl_count)
+                constraints.append("bmrl.count > {}".format(bmrl_count))
             if int(pbd_count) > 0:
-                query += " AND pbd.count > {}".format(pbd_count)
+                constraints.append("pbd.count > {}".format(pbd_count))
             if int(pbrm_count) > 0:
-                query += " AND pbrm.count > {}".format(pbrm_count)
+                constraints.append("pbrm.count > {}".format(pbrm_count))
             if int(pbrl_count) > 0:
-                query += " AND pbrl.count > {}".format(pbrl_count)
+                constraints.append("pbrl.count > {}".format(pbrl_count))
+            #build query constraints
+            if len(constraints) > 0:
+                query += " WHERE "
+                for i in range(len(constraints)):
+                    if i != 0: query += " AND "
+                    query += constraints[i]
+                    i += 1
             query += ';'
             return redirect(url_for('viewpatients', query = query))
         mutgenes, sqlarg = customquery("""SELECT GROUP_CONCAT(gene) FROM ngsMutations""")
@@ -402,7 +420,7 @@ def search():
         else:
             treatments = []
 
-        return render_template("search.html", error = error, message = message, name = session['name'], email = session['email'], mutgenes = mutgenes, treatments = treatments)
+        return render_template("search.html", error = error, message = message, name = session['name'], email = session['email'], mutgenes = sorted(mutgenes), treatments = sorted(treatments))
     except Exception as e:
         error = str(e)
         return render_template("search.html", error = error, message = message, name = session['name'], email = session['email'], mutgenes = [], treatments = [])
@@ -630,6 +648,51 @@ def addmutation():
             , ptID = ptid)
 
 
+
+@app.route('/edit-mutation/', methods=['GET','POST'])
+def editmutation():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    ptid = request.args.get('ptid')
+    mutid = request.args.get('mutid')
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
+    if mutid == None: return redirect(url_for('patient', ptid = ptid, error = "No mutation ID specified, redirecting to view patient {}.".format(ptid)))
+    try:
+        if request.method == "POST":
+            gene = str(request.form['gene'])
+            mutation = str(request.form['mutation'])
+            vaf = float(request.form['vaf'])
+            tier = int(request.form['tier'])
+            notes = str(request.form['notes'])
+            c, conn = connection()
+            c.execute(
+                """UPDATE ngsMutations SET gene = %s, mutation = %s, vaf = %s, tier = %s, notes = %s WHERE ptID = %s AND mutID = %s""",
+                [gene, mutation, vaf, tier, notes, ptid, mutid])
+            conn.commit()
+            c.close()
+            conn.close()
+            gc.collect()
+            return redirect(url_for('patient', ptid = ptid, message = "Records updated."))
+        #Check whether a BM sample exists
+        mut_data, arg = grabdata('ngsMutations',"ptID = {} AND mutID = {}".format(ptid, mutid))
+        if len(mut_data) == 0: return redirect(url_for('viewpatients', error = "Specified mutation ID does not exist for CIRM {}.".format(ptid)))
+        return render_template("editmutation.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, mut_data = mut_data)
+    except Exception as e:
+        error = str(e)
+        return render_template("editmutation.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, mut_data = [])
+
+
 @app.route('/add-treatment/', methods=['GET','POST'])
 def addtreatment():
     """
@@ -693,13 +756,14 @@ def addbmsample():
             stype = int(request.form['stype'])
             postTransplant = int(request.form['postTransplant'])
             blast = float(request.form['blast'])
+            viability = float(request.form['viability'])
             freezedownMedia = str(request.form['freezedownMedia'])
             location = str(request.form['location'])
             notes = str(request.form['notes'])
             c, conn = connection()
             c.execute(
-                "INSERT INTO bmCollection (ptID, doc, dop, vials, cellNumbers, type, postTransplant, blast, freezedownMedia, location, notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                [ptid, doc, dop, vials, cellNumbers, stype, postTransplant, blast, freezedownMedia, location, notes])
+                "INSERT INTO bmCollection (ptID, doc, dop, vials, cellNumbers, type, postTransplant, blast, viability, freezedownMedia, location, notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                [ptid, doc, dop, vials, cellNumbers, stype, postTransplant, blast, viability, freezedownMedia, location, notes])
             conn.commit()
             c.close()
             conn.close()
@@ -741,14 +805,15 @@ def bmsample():
             stype = int(request.form['stype'])
             postTransplant = int(request.form['postTransplant'])
             blast = float(request.form['blast'])
+            viability = float(request.form['viability'])
             freezedownMedia = str(request.form['freezedownMedia'])
             location = str(request.form['location'])
             notes = str(request.form['notes'])
             c, conn = connection()
             c.execute(
-                """UPDATE bmCollection SET doc = %s, dop = %s, vials = %s, cellNumbers = %s, type = %s, postTransplant = %s, blast = %s
+                """UPDATE bmCollection SET doc = %s, dop = %s, vials = %s, cellNumbers = %s, type = %s, postTransplant = %s, blast = %s, viability = %s
                 , freezedownMedia = %s, location = %s, notes = %s WHERE bmID =  %s AND ptID = %s""",
-                [doc, dop, vials, cellNumbers, stype, postTransplant, blast, freezedownMedia, location, notes, bmid, ptid])
+                [doc, dop, vials, cellNumbers, stype, postTransplant, blast, viability, freezedownMedia, location, notes, bmid, ptid])
             conn.commit()
             c.close()
             conn.close()
@@ -876,13 +941,14 @@ def addpbsample():
             stype = int(request.form['stype'])
             postTransplant = int(request.form['postTransplant'])
             blast = request.form['blast']
+            viability = float(request.form['viability'])
             freezedownMedia = str(request.form['freezedownMedia'])
             location = str(request.form['location'])
             notes = str(request.form['notes'])
             c, conn = connection()
             c.execute(
-                "INSERT INTO pbCollection (ptID, doc, dop, vials, cellNumbers, lp, type, postTransplant, blast, freezedownMedia, location, notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                [ptid, doc, dop, vials, cellNumbers, lp, stype, postTransplant, blast, freezedownMedia, location, notes])
+                "INSERT INTO pbCollection (ptID, doc, dop, vials, cellNumbers, lp, type, postTransplant, blast, viability, freezedownMedia, location, notes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                [ptid, doc, dop, vials, cellNumbers, lp, stype, postTransplant, blast, viability, freezedownMedia, location, notes])
             conn.commit()
             c.close()
             conn.close()
@@ -925,14 +991,15 @@ def pbsample():
             stype = int(request.form['stype'])
             postTransplant = int(request.form['postTransplant'])
             blast = float(request.form['blast'])
+            viability = float(request.form['viability'])
             freezedownMedia = str(request.form['freezedownMedia'])
             location = str(request.form['location'])
             notes = str(request.form['notes'])
             c, conn = connection()
             c.execute(
-                """UPDATE pbCollection SET doc = %s, dop = %s, vials = %s, cellNumbers = %s, lp = %s, type = %s, postTransplant = %s, blast = %s
+                """UPDATE pbCollection SET doc = %s, dop = %s, vials = %s, cellNumbers = %s, lp = %s, type = %s, postTransplant = %s, blast = %s, viability = %s
                 , freezedownMedia = %s, location = %s, notes = %s WHERE pbID =  %s AND ptID = %s""",
-                [doc, dop, vials, cellNumbers, lp, stype, postTransplant, blast, freezedownMedia, location, notes, pbid, ptid])
+                [doc, dop, vials, cellNumbers, lp, stype, postTransplant, blast, viability, freezedownMedia, location, notes, pbid, ptid])
             conn.commit()
             c.close()
             conn.close()

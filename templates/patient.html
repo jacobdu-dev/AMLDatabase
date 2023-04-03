@@ -72,6 +72,7 @@
                                 <th>Variant Freq.</th>
                                 <th>Tier</th>
                                 <th>Notes</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -83,6 +84,11 @@
                                 <td>{{vaf}}</td>
                                 <td>{{tier}}</td>
                                 <td>{{mutnotes}}</td>
+                                <td>
+                                    <a href="/edit-mutation/?ptid={{ptID}}&mutid={{mutID}}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    </a>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -186,6 +192,7 @@
                                 <th>Type</th>
                                 <th>Post-Transplant?</th>
                                 <th>Blast %</th>
+                                <th>Viability</th>
                                 <th>Cryo Media</th>
                                 <th>Location</th>
                                 <th>Notes</th>
@@ -193,7 +200,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for bmID, ptID, doc, dop, vials, cellNumbers, type, postTransplant, blast, freezedownMedia, location, clinicalFlow, notes in bm_sample_log %}
+                            {% for bmID, ptID, doc, dop, vials, cellNumbers, type, postTransplant, blast, viability, freezedownMedia, location, clinicalFlow, notes in bm_sample_log %}
                             <tr>
                                 <td>{{bmID}}</td>
                                 <td>{{doc}}</td>
@@ -203,6 +210,7 @@
                                 <td>{{ {0:'Diagnosis', 1:'Remission', 2: 'Relapse'}[type] }}</td>
                                 <td>{{ booldict[postTransplant] }}</td>
                                 <td>{{blast}}</td>
+                                <td>{{viability}}</td>
                                 <td>{{freezedownMedia}}</td>
                                 <td>{{location}}</td>
                                 <td>{{notes}}</td>
@@ -237,7 +245,7 @@
                                 <th>LP Sample</th>
                                 <th>Type</th>
                                 <th>Post-Transplant?</th>
-                                <th>Blast %</th>
+                                <th>Viability</th>
                                 <th>Cryo Media</th>
                                 <th>Location</th>
                                 <th>Notes</th>
@@ -245,7 +253,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for pbID, ptID, doc, dop, vials, cellNumbers, lp, type, postTransplant, blast, freezedownMedia, location, cbcID, notes in pb_sample_log %}
+                            {% for pbID, ptID, doc, dop, vials, cellNumbers, lp, type, postTransplant, blast, viability, freezedownMedia, location, cbcID, notes in pb_sample_log %}
                             <tr>
                                 <td>{{pbID}}</td>
                                 <td>{{doc}}</td>
@@ -256,6 +264,7 @@
                                 <td>{{ {0:'Diagnosis', 1:'Remission', 2: 'Relapse'}[type] }}</td>
                                 <td>{{ booldict[postTransplant] }}</td>
                                 <td>{{blast}}</td>
+                                <td>{{viability}}</td>
                                 <td>{{freezedownMedia}}</td>
                                 <td>{{location}}</td>
                                 <td>{{notes}}</td>

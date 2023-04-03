@@ -54,6 +54,10 @@
 				<input type="number" step="0.01" min="0" max="100" id="inputBlast" class="form-control" name="blast" value="{{request.form.blast}}">
 			</div>
 			<div class="form-group">
+				<label for="inputViability">Viability (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="inputViability" class="form-control" name="viability" value="{{request.form.viability}}">
+			</div>
+			<div class="form-group">
 				<label for="inputFreezedownMedia">Cryopreservation Media</label>
 				<input type="text" id="inputFreezedownMedia" class="form-control" maxlength="255" name="freezedownMedia" value="{{request.form.freezedownMedia}}" required>
 			</div>

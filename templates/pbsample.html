@@ -4,7 +4,7 @@
 
 <div class="card">
 	<div class="card-body">
-		{% for pbID, ptID, doc, dop, vials, cellNumbers, lp, stype, postTransplant, blast, freezedownMedia, location, cbc, notes in pb_sample %}
+		{% for pbID, ptID, doc, dop, vials, cellNumbers, lp, stype, postTransplant, blast, viability, freezedownMedia, location, cbc, notes in pb_sample %}
 		<h3>CIRM {{ptID}} PB Collection ID {{pbID}}</h3>
 
 		<form method="post">
@@ -88,6 +88,10 @@
 			<div class="form-group">
 				<label for="Blast">Blast Frequency (%)</label>
 				<input type="number" step="0.01" min="0" max="100" id="Blast" class="form-control" name="blast" value="{{blast}}">
+			</div>
+			<div class="form-group">
+				<label for="Viability">Viability (%)</label>
+				<input type="number" step="0.01" min="0" max="100" id="Viability" class="form-control" name="viability" value="{{viability}}">
 			</div>
 			<div class="form-group">
 				<label for="FreezedownMedia">Cryopreservation Media</label>

@@ -6,6 +6,7 @@ from passlib.hash import sha256_crypt
 from pymysql.converters import escape_string as thwart
 from flask_sslify import SSLify
 from io import BytesIO, StringIO
+from subprocess import check_output
 import csv
 import pytz
 import pandas as pd
@@ -1251,31 +1252,30 @@ def export():
         ) a 
     ORDER BY 'CIRM #' ASC, 'DOC' ASC;
     """
-    si = StringIO()
-    cw = csv.writer(si)
-    c, conn = connection()
-    c.execute(query)
-    rows = c.fetchall()
-    cw.writerow([i[0] for i in c.description])
-    cw.writerows(rows)
-    c.close()
-    conn.close()
-    gc.collect()
-    response = make_response(si.getvalue())
-    response.headers['Content-Disposition'] = 'attachment; filename=cirm_log_{date:%Y-%m-%d_%H:%M:%S}.csv'.format(date=datetime.now())
-    response.headers["Content-type"] = "text/csv"
     c, conn = connection()
     df = pd.read_sql(query, conn, index_col='CIRM #')
     df = df.sort_values(['CIRM #', 'DOC'],
         ascending = [True, True])
     resp = make_response(df.to_csv())
-    resp.headers["Content-Disposition"] = 'attachment; filename=cirm_log_{date:%Y-%m-%d_%H:%M:%S}.csv'.format(date=datetime.now())
+    resp.headers["Content-Disposition"] = 'attachment; filename=cirm_log_{date:%m-%d-%Y_%H:%M:%S}.csv'.format(date=datetime.now(pytz.timezone('America/Los_Angeles')))
     resp.headers["Content-Type"] = "text/csv"
     c.close()
     conn.close()
     gc.collect()
     return resp
 
+@app.route('/db-snapshot/')
+def backup():
+    """
+    Exports the latest sqldump aand returns as a .sql file.
+    1. Create a subprocess and create a mysqldump of the aml database
+    2. Send dump to user as .sql file
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    sqldump = check_output(['mysqldump', '-u',database_user,'-p{}'.format(database_password),database_name])
+    return send_file(BytesIO(sqldump), download_name = 'amldb_sqldump_{date:%m-%d-%Y_%H:%M:%S}.sql'.format(date=datetime.now(pytz.timezone('America/Los_Angeles'))), as_attachment = True)
 
 @app.route('/ln2-report/')
 def ln2report():

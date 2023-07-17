@@ -5,8 +5,10 @@ from datetime import datetime
 from passlib.hash import sha256_crypt
 from pymysql.converters import escape_string as thwart
 from flask_sslify import SSLify
-from io import BytesIO
+from io import BytesIO, StringIO
+import csv
 import pytz
+import pandas as pd
 import gc
 
 
@@ -847,8 +849,8 @@ def bmsample():
         bm_sample, arg = grabdata('bmCollection',"ptID = '{}' AND bmID = '{}'".format(ptid, bmid))
         if len(bm_sample) == 0: return redirect(url_for('patient', ptid = ptid, error = "Specified BM ID does not exist for this patient. Redirected to view CIRM {}.".format(ptid)))
         #Clinical Flow entry check
-        if bm_sample[0][11] != None: 
-            clinicalFlow_data, arg = grabdata('clinicalFlow',"ptID = '{}' AND clincalFlowID = '{}'".format(ptid, bm_sample[0][11]))
+        if bm_sample[0][12] != None: 
+            clinicalFlow_data, arg = grabdata('clinicalFlow',"ptID = '{}' AND clincalFlowID = '{}'".format(ptid, bm_sample[0][12]))
         else:
             clinicalFlow_data = []
         return render_template("bmsample.html", error = error, message = message, name = session['name'], email = session['email']
@@ -1032,8 +1034,8 @@ def pbsample():
         pb_sample, arg = grabdata('pbCollection',"ptID = '{}' AND pbID = '{}'".format(ptid, pbid))
         if len(pb_sample) == 0: return redirect(url_for('patient', ptid = ptid, error = "Specified PB ID does not exist for this patient. Redirected to view CIRM {}.".format(ptid)))
         #Clinical CBC entry check
-        if pb_sample[0][12] != None: 
-            cbc_data, arg = grabdata('cbc',"ptID = '{}' AND cbcID = '{}'".format(ptid, pb_sample[0][12]))
+        if pb_sample[0][13] != None: 
+            cbc_data, arg = grabdata('cbc',"ptID = '{}' AND cbcID = '{}'".format(ptid, pb_sample[0][13]))
         else:
             cbc_data = []
         return render_template("pbsample.html", error = error, message = message, name = session['name'], email = session['email']
@@ -1206,6 +1208,106 @@ def getfile():
     attachment_data, arg = grabdata('files', 'fileID = {}'.format(fileid))
     if len(attachment_data) == 0: return redirect(url_for('viewpatients', error = "File ID does not exist. Redirected to view all patients."))
     return send_file(BytesIO(attachment_data[0][4]), download_name = attachment_data[0][3], as_attachment = True)
+
+
+@app.route('/export-csv/')
+def export():
+    """
+    Queries the SQL server for the latest sample log and generates a CSV file.
+    1. Connect to DB and query for the latest sample data
+        a) Merge PB and BM collections based on sample typing
+    2. Import query results into a Pandas Dataframe
+    3. Sort log by CIRM # then DOC
+    4. Return to user as CSV
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+
+    query = """
+    SELECT * FROM (
+        SELECT ptID AS 'CIRM #', doc AS 'DOC', dop AS 'DOP', viability AS 'Viability'
+        , location AS 'Location', 
+        CASE
+            WHEN type = 0 AND lp = 0 THEN 'PB-D'
+            WHEN type = 0 AND lp = 1 THEN 'LP-D'
+            WHEN type = 1 THEN 'PB-RM'
+            ELSE 'PB-RL'
+        END AS 'Sample Type'
+        , vials AS 'Vial Count', cellNumbers AS 'Cell Count', blast AS 'Blast %'
+        , freezedownMedia AS 'Cryo Media', notes AS 'Notes'
+        FROM pbCollection 
+        UNION ALL
+        SELECT ptID AS 'CIRM #', doc AS 'DOC', dop AS 'DOP', viability AS 'Viability'
+        , location AS 'Location', 
+        CASE
+            WHEN type = 0 THEN 'BM-D'
+            WHEN type = 1 THEN 'BM-RM'
+            ELSE 'BM-RL'
+        END AS 'Sample Type'
+        , vials AS 'Vial Count', cellNumbers AS 'Cell Count', blast AS 'Blast %'
+        , freezedownMedia AS 'Cryo Media', notes AS 'Notes'
+        FROM bmCollection
+        ) a 
+    ORDER BY 'CIRM #' ASC, 'DOC' ASC;
+    """
+    si = StringIO()
+    cw = csv.writer(si)
+    c, conn = connection()
+    c.execute(query)
+    rows = c.fetchall()
+    cw.writerow([i[0] for i in c.description])
+    cw.writerows(rows)
+    c.close()
+    conn.close()
+    gc.collect()
+    response = make_response(si.getvalue())
+    response.headers['Content-Disposition'] = 'attachment; filename=cirm_log_{date:%Y-%m-%d_%H:%M:%S}.csv'.format(date=datetime.now())
+    response.headers["Content-type"] = "text/csv"
+    c, conn = connection()
+    df = pd.read_sql(query, conn, index_col='CIRM #')
+    df = df.sort_values(['CIRM #', 'DOC'],
+        ascending = [True, True])
+    resp = make_response(df.to_csv())
+    resp.headers["Content-Disposition"] = 'attachment; filename=cirm_log_{date:%Y-%m-%d_%H:%M:%S}.csv'.format(date=datetime.now())
+    resp.headers["Content-Type"] = "text/csv"
+    c.close()
+    conn.close()
+    gc.collect()
+    return resp
+
+
+@app.route('/ln2-report/')
+def ln2report():
+    """
+    View all patients in AML database.
+    1. Connect to AML Database
+    2. Query the pb and bm Collection table for the location and sum of vial count from each entry
+    3. Return LN2 Report to user
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    query = """
+    SELECT a.location AS 'Box #', SUM(a.vials) AS '# Vials' FROM (
+        SELECT location, vials FROM pbCollection
+        UNION ALL
+        SELECT location, vials FROM bmCollection
+    ) a GROUP BY a.location ORDER BY a.location ASC;
+    """
+
+    c, conn = connection()
+    c.execute(query)
+    ln2log = []
+    for row in c:
+        ln2log.append(row)
+    c.close()
+    conn.close()
+    gc.collect()
+    return render_template("ln2report.html", error = error, message = message, name = session['name'], email = session['email'], 
+        ln2log = ln2log)
+
+
 
 if __name__ == "__main__":
     app.run()

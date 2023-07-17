@@ -1,0 +1,38 @@
+{% extends "header.html" %}
+
+{% block body %}
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/plugins/src/table/datatable/datatables.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/plugins/css/light/table/datatable/dt-global_style.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/plugins/css/light/table/datatable/custom_dt_miscellaneous.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/plugins/css/dark/table/datatable/dt-global_style.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='src/plugins/css/dark/table/datatable/custom_dt_miscellaneous.css') }}">
+
+<h3>LN2 Report</h3>
+
+
+<div class="row layout-top-spacing">
+
+<div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+    <div class="widget-content widget-content-area br-8">
+        <table id="zero-config" class="table dt-table-hover" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Box ID</th>
+                    <th># Vials</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for boxID, num_vials in ln2log %}
+                <tr>
+                    <td>{{boxID}}</td>
+                    <td>{{num_vials}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% endblock %}

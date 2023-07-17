@@ -288,9 +288,9 @@
 			<button class="btn btn-primary" type="submit" value="submit">Update Sample Records</button>
 			{% endfor %}
 			{% endif %}
-			{% endfor %}
 		</form>
-
+		<button class="btn btn-danger mb-2 me-4" onclick="location.href='/remove-sample/?ptid={{ptID}}&bmid={{bmID}}'">Remove Sample From Records</button>
+		{% endfor %}
 
 	</div>
 </div>

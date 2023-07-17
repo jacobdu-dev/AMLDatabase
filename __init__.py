@@ -1191,6 +1191,56 @@ def addattachment():
         return render_template("addattachment.html", error = error, message = message, name = session['name'], email = session['email']
             , ptID = ptid)
 
+
+
+
+
+@app.route('/remove-sample/', methods=['GET','POST'])
+def removesample():
+    """
+    Add patient to AML database.
+    1. Check if current request is a submission request.
+        if True, get all entries from the submission form and convert to proper datatype for MySQL insert.
+        Connect to AML MySQL database.
+        Insert entry as new row into AML.patient table and commit changes.
+    2. Else, Return add patient page.
+    """
+    if 'active' not in session: return redirect(url_for('login', error=str('Restricted area! Please log in!')))
+    error = request.args.get('error')
+    message = request.args.get('message')
+    ptid = request.args.get('ptid')
+    pbid = request.args.get('pbid')
+    bmid = request.args.get('bmid')
+    if ptid == None: return redirect(url_for('viewpatients', error = "No patient ID specified. Redirected to view all patients."))
+    if pbid == None and bmid == None: return redirect(url_for('patient', ptid = ptid, error = "No sample ID specified. Redirected to view CIRM {}.".format(ptid)))
+    try:
+        if request.method == "POST":
+            ptid = request.form['ptID']
+            sampletype = int(request.form['sampleType'])
+            sampleID = int(request.form['sampleID'])
+            if sampletype == 0:
+                query = "DELETE FROM bmCollection WHERE bmID =  {} AND ptID = {}".format(sampleID, ptid)
+            else:
+                query = "DELETE FROM pbCollection WHERE pbID =  {} AND ptID = {}".format(sampleID, ptid)
+            c, conn = connection()
+            c.execute(query)
+            conn.commit()
+            c.close()
+            conn.close()
+            gc.collect()
+            return redirect(url_for('patient', ptid = ptid, message = "Sample removed from records. Redirected to view CIRM {}.".format(ptid)))
+        sampletype = 1 if pbid != None else 0
+        sampleTypeStr = 'PB' if pbid != None else 'BM'
+        sampleID = pbid if pbid != None else bmid
+        return render_template("removesample.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid, sampleType = sampletype, sampleTypeStr = sampleTypeStr, sampleID = sampleID)
+    except Exception as e:
+        error = str(e)
+        return render_template("removesample.html", error = error, message = message, name = session['name'], email = session['email']
+            , ptID = ptid)
+
+
+
 @app.route('/get-file/')
 def getfile():
     """
